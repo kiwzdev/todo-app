@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route'; // ปรับ path ตามโครงสร้างโปรเจกต์
 import { connectMongoDB } from '@/lib/mongodb';
-import Task from '@/models/task';
+import Todo from '@/models/todo';
 import User from '@/models/user';
 
 // helper ดึง user ID จาก session
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const userId = await getUserId(req);
   if (!userId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const tasks = await Task.find({ user: userId }).sort({ createdAt: -1 });
+  const tasks = await Todo.find({ user: userId }).sort({ createdAt: -1 });
   return NextResponse.json(tasks);
 }
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   const { title, description, dueDate, tags, priority } = body;
 
   try {
-    const task = await Task.create({
+    const todo = await Todo.create({
       user: userId,
       title,
       description,
@@ -43,9 +43,9 @@ export async function POST(req: NextRequest) {
       priority,
     });
 
-    return NextResponse.json(task, { status: 201 });
+    return NextResponse.json(todo, { status: 201 });
   } catch (err) {
-    return NextResponse.json({ message: 'Error creating task' }, { status: 400 });
+    return NextResponse.json({ message: 'Error creating task' + err }, { status: 400 });
   }
 }
 
@@ -58,19 +58,19 @@ export async function PUT(req: NextRequest) {
   const { id, ...updates } = body;
 
   try {
-    const task = await Task.findOneAndUpdate(
+    const todo = await Todo.findOneAndUpdate(
       { _id: id, user: userId },
       updates,
       { new: true }
     );
 
-    if (!task) {
-      return NextResponse.json({ message: 'Task not found' }, { status: 404 });
+    if (!todo) {
+      return NextResponse.json({ message: 'Todo not found' }, { status: 404 });
     }
 
-    return NextResponse.json(task);
+    return NextResponse.json(todo);
   } catch (err) {
-    return NextResponse.json({ message: 'Error updating task' }, { status: 400 });
+    return NextResponse.json({ message: 'Error updating task' + err }, { status: 400 });
   }
 }
 
@@ -83,14 +83,14 @@ export async function DELETE(req: NextRequest) {
   const { id } = body;
 
   try {
-    const deleted = await Task.findOneAndDelete({ _id: id, user: userId });
+    const deleted = await Todo.findOneAndDelete({ _id: id, user: userId });
 
     if (!deleted) {
-      return NextResponse.json({ message: 'Task not found' }, { status: 404 });
+      return NextResponse.json({ message: 'Todo not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ message: 'Task deleted' });
+    return NextResponse.json({ message: 'Todo deleted' });
   } catch (err) {
-    return NextResponse.json({ message: 'Error deleting task' }, { status: 400 });
+    return NextResponse.json({ message: 'Error deleting task' + err }, { status: 400 });
   }
 }

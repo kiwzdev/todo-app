@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useLoadingStore } from "@/stores/useLoadingStore";
 import Loading from "@/components/Loading";
-import { set } from "mongoose";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -20,8 +19,11 @@ export default function SignInPage() {
 
   const { isLoading, setLoading } = useLoadingStore();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({ email: "", password: "" });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  }
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,8 +32,8 @@ export default function SignInPage() {
       setLoading(true);
       const res = await signIn("credentials", {
         redirect: false,
-        email,
-        password,
+        email: formData.email,
+        password: formData.password,
       });
 
       if (res?.error) {
@@ -69,8 +71,8 @@ export default function SignInPage() {
             <input
               type="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
               className="mt-1 w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
@@ -82,8 +84,8 @@ export default function SignInPage() {
             <input
               type="password"
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleChange}
               className="mt-1 w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
