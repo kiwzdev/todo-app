@@ -1,17 +1,24 @@
 "use client";
 
 import { signIn, useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useLoadingStore } from "@/stores/useLoadingStore";
+import Loading from "@/components/Loading";
+import { set } from "mongoose";
 
 export default function SignInPage() {
   const router = useRouter();
 
-  const { data: session } = useSession();
-  if (session){
-    router.replace("/");
-  }
+  const { data: session, status } = useSession();
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push("/");
+    }
+  }, [status, session, router]);
+
+  const { isLoading, setLoading } = useLoadingStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +27,7 @@ export default function SignInPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const res = await signIn("credentials", {
         redirect: false,
         email,
@@ -31,15 +39,16 @@ export default function SignInPage() {
         toast.error("Invalid email or password");
         return;
       }
-      if (res?.ok) {
-        toast.success("Sign in successful");
-        router.push("/dashboard");
-      }
-    } catch {
+      toast.success("Sign in successful");
+    } catch (err) {
       setError("Something went wrong");
-      toast.error("Something went wrong");
+      toast.error("Something went wrong, " + err);
+    } finally{
+      setLoading(false);
     }
   };
+
+  if (isLoading || status === "loading") return <Loading />;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">

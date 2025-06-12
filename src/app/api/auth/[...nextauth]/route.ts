@@ -1,16 +1,28 @@
 import { connectMongoDB } from "@/lib/mongodb";
 import User from "@/models/user";
 import bcrypt from "bcryptjs";
-import NextAuth from "next-auth";
+import NextAuth, { User as AuthUser, Session } from "next-auth";
+import { type SessionStrategy, type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const authOptions = {
+import { JWT } from "next-auth/jwt";
+
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
-      credentials: {},
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+
       async authorize(credentials) {
-        const { email, password } = credentials;
+        const email = credentials?.email;
+        const password = credentials?.password;
+
+        if (!email || !password) {
+          throw new Error("Missing email or password");
+        }
 
         await connectMongoDB();
         const user = await User.findOne({ email });
@@ -29,14 +41,14 @@ const authOptions = {
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as SessionStrategy,
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/sign-in",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: AuthUser }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -44,12 +56,12 @@ const authOptions = {
       }
       return token;
     },
-    async session({ session, token }) {
-      session.user = {
-        id: token.id,
-        email: token.email,
-        username: token.username,
-      };
+    async session({ session, token }: { session: Session; token: JWT }) {
+        session.user = {
+          id: token.id as string,
+          email: token.email,
+          username: token.username,
+        };
       return session;
     },
   },
