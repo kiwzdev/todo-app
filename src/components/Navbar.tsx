@@ -16,7 +16,7 @@ export default function Navbar({ session }: any) {
           href="/"
           className="text-2xl font-bold text-gray-800 dark:text-white"
         >
-          TodoApp
+          Welcome, {session.user.username}
         </Link>
 
         {/* Desktop Menu */}

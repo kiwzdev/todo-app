@@ -5,7 +5,11 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "@/components/Loading";
-import { Pencil, Trash } from "lucide-react";
+import { Check, Circle, Pencil, Trash } from "lucide-react";
+import clsx from "clsx";
+import Navbar from "@/components/Navbar";
+
+import { Dialog } from "@headlessui/react";
 
 type Todo = {
   _id: string;
@@ -23,6 +27,7 @@ export default function TodosPage() {
   const queryClient = useQueryClient();
 
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [newTodoData, setNewTodoData] = useState({
     title: "",
@@ -40,32 +45,27 @@ export default function TodosPage() {
     priority: "medium",
   });
 
-  // Redirect if not signed in
   useEffect(() => {
     if (status === "loading") return;
     if (!session?.user) router.push("/sign-in");
   }, [session, status, router]);
 
-  // Fetch todos
   const { data: todos, isLoading } = useQuery<Todo[]>({
-    queryKey: ["todos"], // Unique query key to identify this query
+    queryKey: ["todos"],
     queryFn: () => axios.get("/api/todos").then((res) => res.data),
   });
 
-  // Mutation for adding todo
   const addMutation = useMutation({
     mutationFn: (newTodo: Partial<Todo>) => axios.post("/api/todos", newTodo),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }), // Invalidate todos query ( Update cache or refetch )
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
   });
 
-  // Mutation for updating todo
   const updateMutation = useMutation({
     mutationFn: (upd: Partial<Todo> & { id: string }) =>
       axios.put("/api/todos", upd),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] }); // Invalidate todos query ( Update cache or refetch )
-      setEditingTodo(null); // Clear editing todo state
-      // Reset form
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+      setEditingTodo(null);
       setFormData({
         title: "",
         description: "",
@@ -73,34 +73,17 @@ export default function TodosPage() {
         tags: "",
         priority: "medium",
       });
+      setIsModalOpen(false);
     },
   });
 
-  // Mutation for deleting todo
   const deleteMutation = useMutation({
     mutationFn: (id: string) => axios.delete("/api/todos", { data: { id } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }), // Invalidate todos query ( Update cache or refetch )
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
   });
 
-  // Handle form submission
-  const handleUpdate = () => {
-    if (!formData.title.trim()) return;
-    const payload = {
-      title: formData.title,
-      description: formData.description,
-      dueDate: formData.dueDate || undefined,
-      tags: formData.tags ? formData.tags.split(",").map((t) => t.trim()) : [],
-      priority: formData.priority as Todo["priority"],
-      id: editingTodo?._id || "",
-    };
-    // Editing an existing todo
-    updateMutation.mutate(payload);
-  };
-
-  //
   const handleAdd = () => {
     if (!newTodoData.title.trim()) return;
-
     const payload = {
       title: newTodoData.title,
       description: newTodoData.description,
@@ -110,24 +93,33 @@ export default function TodosPage() {
         : [],
       priority: newTodoData.priority as Todo["priority"],
     };
-
     addMutation.mutate(payload, {
-      onSuccess: () => {
-        // Reset form
+      onSuccess: () =>
         setNewTodoData({
           title: "",
           description: "",
           dueDate: "",
           tags: "",
           priority: "medium",
-        });
-      },
+        }),
     });
   };
 
-  // Start editing todo
+  const handleUpdate = () => {
+    if (!formData.title.trim() || !editingTodo) return;
+    const payload = {
+      title: formData.title,
+      description: formData.description,
+      dueDate: formData.dueDate || undefined,
+      tags: formData.tags ? formData.tags.split(",").map((t) => t.trim()) : [],
+      priority: formData.priority as Todo["priority"],
+      id: editingTodo._id,
+    };
+    updateMutation.mutate(payload);
+  };
+
   const startEdit = (todo: Todo) => {
-    setEditingTodo(todo); // Set the todo to be edited
+    setEditingTodo(todo);
     setFormData({
       title: todo.title,
       description: todo.description || "",
@@ -135,94 +127,41 @@ export default function TodosPage() {
       tags: todo.tags.join(", "),
       priority: todo.priority,
     });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingTodo(null);
+    setFormData({
+      title: "",
+      description: "",
+      dueDate: "",
+      tags: "",
+      priority: "medium",
+    });
   };
 
   if (status === "loading" || isLoading) return <Loading />;
 
   return (
-    <div className="min-h-screen px-4 py-8 bg-gray-50 dark:bg-gray-900 transition-all">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            📝 My Todos
-          </h1>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-700 dark:text-gray-200">
-              {session?.user?.username}
-            </span>
-          </div>
-        </header>
-
-        {/* Todo Form */}
-        <div className="space-y-4 mb-8 bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-            Add New Todo
-          </h2>
-          {/* Form Inputs */}
-          <input
-            placeholder="Title"
-            value={newTodoData.title}
-            onChange={(e) =>
-              setNewTodoData({ ...newTodoData, title: e.target.value })
-            }
-            className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-          <textarea
-            placeholder="Description"
-            value={newTodoData.description}
-            onChange={(e) =>
-              setNewTodoData({ ...newTodoData, description: e.target.value })
-            }
-            className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-          <div className="flex gap-2">
-            <input
-              type="date"
-              value={newTodoData.dueDate}
-              onChange={(e) =>
-                setNewTodoData({ ...newTodoData, dueDate: e.target.value })
-              }
-              className="flex-1 px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            />
-            <select
-              value={newTodoData.priority}
-              onChange={(e) =>
-                setNewTodoData({ ...newTodoData, priority: e.target.value })
-              }
-              className="w-40 px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+    <>
+      <Navbar session={session} />
+      <div className="min-h-screen px-4 py-8 bg-gray-50 dark:bg-gray-900">
+        <div className="mx-5">
+          <div className="space-y-4">
+            <Dialog
+              open={isModalOpen}
+              onClose={closeModal}
+              className="relative z-50"
             >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-          <input
-            placeholder="Tags (comma separated)"
-            value={newTodoData.tags}
-            onChange={(e) =>
-              setNewTodoData({ ...newTodoData, tags: e.target.value })
-            }
-            className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-          <button
-            onClick={handleAdd}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg"
-          >
-            {addMutation.isPending ? "Adding..." : "Add Todo"}
-          </button>
-        </div>
+              <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+              <div className="fixed inset-0 flex items-center justify-center p-4">
+                <Dialog.Panel className="max-w-md w-full bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-4">
+                  <Dialog.Title className="text-lg font-bold text-gray-900 dark:text-white">
+                    Edit Todo
+                  </Dialog.Title>
 
-        {/* Todo List */}
-        <ul className="space-y-4">
-          {todos?.map((todo) => (
-            <li
-              key={todo._id}
-              className="flex flex-col gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm"
-            >
-              {editingTodo?._id === todo._id ? (
-                // In-place edit form
-                <div className="space-y-2">
                   <input
                     placeholder="Title"
                     value={formData.title}
@@ -239,27 +178,25 @@ export default function TodosPage() {
                     }
                     className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   />
-                  <div className="flex gap-2">
-                    <input
-                      type="date"
-                      value={formData.dueDate}
-                      onChange={(e) =>
-                        setFormData({ ...formData, dueDate: e.target.value })
-                      }
-                      className="flex-1 px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                    />
-                    <select
-                      value={formData.priority}
-                      onChange={(e) =>
-                        setFormData({ ...formData, priority: e.target.value })
-                      }
-                      className="w-40 px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                    >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                    </select>
-                  </div>
+                  <input
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, dueDate: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  />
+                  <select
+                    value={formData.priority}
+                    onChange={(e) =>
+                      setFormData({ ...formData, priority: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
                   <input
                     placeholder="Tags (comma separated)"
                     value={formData.tags}
@@ -268,35 +205,105 @@ export default function TodosPage() {
                     }
                     className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 pt-2">
                     <button
-                      onClick={handleUpdate}
+                      onClick={() => {
+                        handleUpdate();
+                        setIsModalOpen(false);
+                      }}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg"
                     >
                       {updateMutation.isPending ? "Saving..." : "Save"}
                     </button>
                     <button
-                      onClick={() => {
-                        setEditingTodo(null);
-                        setFormData({
-                          title: "",
-                          description: "",
-                          dueDate: "",
-                          tags: "",
-                          priority: "medium",
-                        });
-                      }}
+                      onClick={closeModal}
                       className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 rounded-lg"
                     >
                       Cancel
                     </button>
                   </div>
-                </div>
-              ) : (
-                // Display mode
+                </Dialog.Panel>
+              </div>
+            </Dialog>
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+              Add New Todo
+            </h2>
+            <input
+              placeholder="Title"
+              value={newTodoData.title}
+              onChange={(e) =>
+                setNewTodoData({ ...newTodoData, title: e.target.value })
+              }
+              className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            />
+            <textarea
+              placeholder="Description"
+              value={newTodoData.description}
+              onChange={(e) =>
+                setNewTodoData({ ...newTodoData, description: e.target.value })
+              }
+              className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={newTodoData.dueDate}
+                onChange={(e) =>
+                  setNewTodoData({ ...newTodoData, dueDate: e.target.value })
+                }
+                className="flex-1 px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+              <select
+                value={newTodoData.priority}
+                onChange={(e) =>
+                  setNewTodoData({ ...newTodoData, priority: e.target.value })
+                }
+                className="w-40 px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <input
+              placeholder="Tags (comma-separated)"
+              value={newTodoData.tags}
+              onChange={(e) =>
+                setNewTodoData({ ...newTodoData, tags: e.target.value })
+              }
+              className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            />
+            <button
+              onClick={handleAdd}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg"
+            >
+              {addMutation.isPending ? "Adding..." : "Add Todo"}
+            </button>
+          </div>
+
+          <ul className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {todos?.map((todo) => (
+              <li
+                key={todo._id}
+                className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm"
+              >
+                {/* บรรทัด Title + ปุ่ม Edit/Delete */}
                 <div className="flex justify-between items-start">
-                  <div className="flex gap-3 items-start">
-                    {/* Checkbox */}
+                  <h3
+                    className={clsx(
+                      "text-lg font-semibold flex items-center gap-2",
+                      todo.completed
+                        ? "text-green-400"
+                        : "text-gray-800 dark:text-white"
+                    )}
+                  >
+                    {todo.completed && (
+                      <span className="text-green-500">✓</span>
+                    )}
+                    {todo.title}
+                  </h3>
+
+                  <div className="flex gap-2 ml-4">
                     <input
                       type="checkbox"
                       checked={todo.completed}
@@ -306,41 +313,8 @@ export default function TodosPage() {
                           completed: !todo.completed,
                         })
                       }
-                      className="w-5 h-5 mt-1 text-blue-600"
+                      className="w-5 h-5 accent-green-500 rounded cursor-pointer"
                     />
-                    <div>
-                      <h3
-                        className={`text-lg font-semibold ${
-                          todo.completed
-                            ? "line-through text-gray-400"
-                            : "text-gray-800 dark:text-white"
-                        }`}
-                      >
-                        {todo.title}
-                      </h3>
-                      {todo.description && (
-                        <p className="text-sm text-gray-500 dark:text-gray-300">
-                          {todo.description}
-                        </p>
-                      )}
-                      {todo.tags?.length > 0 && (
-                        <div className="flex flex-wrap mt-1 gap-1">
-                          {todo.tags.map((tag, i) => (
-                            <span
-                              key={i}
-                              className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white px-2 py-0.5 rounded-full"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Due: {todo.dueDate || "N/A"} | Priority: {todo.priority}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
                     <button
                       onClick={() => startEdit(todo)}
                       className="text-blue-500 hover:text-blue-700"
@@ -355,11 +329,73 @@ export default function TodosPage() {
                     </button>
                   </div>
                 </div>
-              )}
-            </li>
-          ))}
-        </ul>
+
+                {/* Checkbox + เนื้อหาอื่นๆ */}
+                <div className="flex gap-3 items-start mt-4">
+                  <div>
+                    {/* Description */}
+                    <p className="text-sm text-gray-500 dark:text-gray-300">
+                      {todo.description || "No description"}
+                    </p>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap mt-1 gap-1 min-h-[1.5rem]">
+                      {todo.tags?.length > 0 ? (
+                        todo.tags.map((tag, i) => (
+                          <span
+                            key={i}
+                            className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white px-2 py-0.5 rounded-full"
+                          >
+                            #{tag}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">
+                          No tags
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Due Date */}
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 min-h-[1.25rem]">
+                      Due: {todo.dueDate || "N/A"}
+                    </div>
+
+                    {/* Priority */}
+                    <div className="mt-1 flex items-center gap-1 min-h-[1.25rem]">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        Priority:
+                      </span>
+                      {[
+                        ...Array(
+                          todo.priority === "high"
+                            ? 3
+                            : todo.priority === "medium"
+                            ? 2
+                            : 1
+                        ),
+                      ].map((_, i) => (
+                        <Circle
+                          key={i}
+                          size={14}
+                          className={
+                            todo.priority === "high"
+                              ? "text-red-500"
+                              : todo.priority === "medium"
+                              ? "text-yellow-500"
+                              : "text-green-500"
+                          }
+                          fill="currentColor"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
