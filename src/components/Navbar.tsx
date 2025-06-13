@@ -14,7 +14,7 @@ export default function Navbar({ session }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-white dark:bg-gray-900 shadow px-4 py-3">
+    <nav className="bg-green-300 dark:bg-gray-900 shadow px-4 py-3">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo / Web Name */}
         <Link
@@ -29,7 +29,7 @@ export default function Navbar({ session }: NavbarProps) {
           <ThemeToggle/>
           {session && (
             <Link
-              href="/dashboard"
+              href="/profile"
               className="text-gray-700 dark:text-gray-200 hover:text-blue-500"
             >
               My Account
@@ -76,7 +76,7 @@ export default function Navbar({ session }: NavbarProps) {
         <div className="md:hidden mt-2 space-y-2">
           {session && (
             <Link
-              href="/dashboard"
+              href="/profile"
               className="block text-gray-700 dark:text-gray-200 hover:text-blue-500"
             >
               My Account

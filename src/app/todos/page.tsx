@@ -10,6 +10,7 @@ import clsx from "clsx";
 import Navbar from "@/components/Navbar";
 
 import { Dialog } from "@headlessui/react";
+import Footer from "@/components/Footer";
 
 type Todo = {
   _id: string;
@@ -23,7 +24,7 @@ type Todo = {
 
 export default function TodosPage() {
   const { data: session, status } = useSession();
-  
+
   const router = useRouter();
 
   useEffect(() => {
@@ -150,7 +151,7 @@ export default function TodosPage() {
     <>
       <Navbar session={session} />
       <div className="min-h-screen px-4 py-8 bg-gray-50 dark:bg-gray-900">
-        <div className="mx-5">
+        <div className="mx-25">
           <div className="space-y-4">
             <Dialog
               open={isModalOpen}
@@ -160,7 +161,7 @@ export default function TodosPage() {
               <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
               <div className="fixed inset-0 flex items-center justify-center p-4">
                 <Dialog.Panel className="max-w-md w-full bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-4">
-                  <Dialog.Title className="text-lg font-bold text-gray-900 dark:text-white">
+                  <Dialog.Title className="text-xl font-bold text-gray-900 dark:text-white">
                     Edit Todo
                   </Dialog.Title>
 
@@ -170,7 +171,7 @@ export default function TodosPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
-                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                   />
                   <textarea
                     placeholder="Description"
@@ -178,7 +179,7 @@ export default function TodosPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                   />
                   <input
                     type="date"
@@ -186,14 +187,14 @@ export default function TodosPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, dueDate: e.target.value })
                     }
-                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                   />
                   <select
                     value={formData.priority}
                     onChange={(e) =>
                       setFormData({ ...formData, priority: e.target.value })
                     }
-                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -205,7 +206,7 @@ export default function TodosPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, tags: e.target.value })
                     }
-                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                   />
                   <div className="flex gap-2 pt-2">
                     <button
@@ -213,7 +214,7 @@ export default function TodosPage() {
                         handleUpdate();
                         setIsModalOpen(false);
                       }}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg"
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg"
                     >
                       {updateMutation.isPending ? "Saving..." : "Save"}
                     </button>
@@ -227,7 +228,7 @@ export default function TodosPage() {
                 </Dialog.Panel>
               </div>
             </Dialog>
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+            <h2 className="text-3xl font-semibold text-gray-800 dark:text-white">
               Add New Todo
             </h2>
             <input
@@ -236,7 +237,9 @@ export default function TodosPage() {
               onChange={(e) =>
                 setNewTodoData({ ...newTodoData, title: e.target.value })
               }
-              className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+             shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0
+             "
             />
             <textarea
               placeholder="Description"
@@ -244,7 +247,7 @@ export default function TodosPage() {
               onChange={(e) =>
                 setNewTodoData({ ...newTodoData, description: e.target.value })
               }
-              className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
             />
             <div className="flex gap-2">
               <input
@@ -253,14 +256,14 @@ export default function TodosPage() {
                 onChange={(e) =>
                   setNewTodoData({ ...newTodoData, dueDate: e.target.value })
                 }
-                className="flex-1 px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="flex-1 px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
               />
               <select
                 value={newTodoData.priority}
                 onChange={(e) =>
                   setNewTodoData({ ...newTodoData, priority: e.target.value })
                 }
-                className="w-40 px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="w-40 px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -273,11 +276,11 @@ export default function TodosPage() {
               onChange={(e) =>
                 setNewTodoData({ ...newTodoData, tags: e.target.value })
               }
-              className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
             />
             <button
               onClick={handleAdd}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg"
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg "
             >
               {addMutation.isPending ? "Adding..." : "Add Todo"}
             </button>
@@ -336,7 +339,7 @@ export default function TodosPage() {
                 <div className="flex gap-3 items-start mt-4">
                   <div>
                     {/* Description */}
-                    <p className="text-sm text-gray-500 dark:text-gray-300">
+                    <p className="text-sm mb-4 text-gray-500 dark:text-gray-300">
                       {todo.description || "No description"}
                     </p>
 
@@ -346,7 +349,7 @@ export default function TodosPage() {
                         todo.tags.map((tag, i) => (
                           <span
                             key={i}
-                            className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white px-2 py-0.5 rounded-full"
+                            className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white px-2 py-0.5 rounded-full flex items-center"
                           >
                             #{tag}
                           </span>
@@ -360,7 +363,14 @@ export default function TodosPage() {
 
                     {/* Due Date */}
                     <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 min-h-[1.25rem]">
-                      Due: {todo.dueDate || "N/A"}
+                      Due:{" "}
+                      {todo.dueDate
+                        ? new Date(todo.dueDate).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "N/A"}
                     </div>
 
                     {/* Priority */}
@@ -398,6 +408,7 @@ export default function TodosPage() {
           </ul>
         </div>
       </div>
+      <Footer/>
     </>
   );
 }
