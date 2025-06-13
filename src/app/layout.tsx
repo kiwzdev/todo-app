@@ -3,6 +3,7 @@ import "./globals.css";
 
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./Providers";
+import { ThemeProvider } from "next-themes";
 
 import Providers from "./provider";
 
@@ -17,12 +18,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <Providers>
         <AuthProvider>
           <body>
-            <Toaster position="top-center" />
-            {children}
+            <ThemeProvider attribute="class" enableSystem defaultTheme="system">
+              <Toaster position="top-center" />
+              {children}
+            </ThemeProvider>
           </body>
         </AuthProvider>
       </Providers>

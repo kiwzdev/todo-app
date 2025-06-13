@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { Session } from "next-auth";
+import { ThemeToggle } from "@/app/theme-toggle";
 
 type NavbarProps = {
   session: Session | null;
@@ -25,12 +26,13 @@ export default function Navbar({ session }: NavbarProps) {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-4">
+          <ThemeToggle/>
           {session && (
             <Link
               href="/dashboard"
               className="text-gray-700 dark:text-gray-200 hover:text-blue-500"
             >
-              Dashboard
+              My Account
             </Link>
           )}
 
@@ -77,7 +79,7 @@ export default function Navbar({ session }: NavbarProps) {
               href="/dashboard"
               className="block text-gray-700 dark:text-gray-200 hover:text-blue-500"
             >
-              Dashboard
+              My Account
             </Link>
           )}
           {!session ? (
