@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
 
 export default function SignUpPage() {
-  const { data: session } = useSession();
-  if (session) redirect("/welcome");
-
+  const { data: session, status } = useSession();
+  
   const router = useRouter();
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (session?.user?.email) router.push("/todos");
+  }, [session, status, router]);
 
   const [formData, setFormData] = useState({
     username: "",

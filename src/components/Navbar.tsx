@@ -4,8 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { Session } from "next-auth";
 
-export default function Navbar({ session }: any) {
+type NavbarProps = {
+  session: Session | null;
+}
+export default function Navbar({ session }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -16,7 +20,7 @@ export default function Navbar({ session }: any) {
           href="/"
           className="text-2xl font-bold text-gray-800 dark:text-white"
         >
-          Welcome, {session.user.username}
+          Welcome, {session?.user.username}
         </Link>
 
         {/* Desktop Menu */}

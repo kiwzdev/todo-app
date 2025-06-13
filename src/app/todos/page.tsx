@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "@/components/Loading";
-import { Check, Circle, Pencil, Trash } from "lucide-react";
+import { Circle, Pencil, Trash } from "lucide-react";
 import clsx from "clsx";
 import Navbar from "@/components/Navbar";
 
@@ -22,8 +22,15 @@ type Todo = {
 };
 
 export default function TodosPage() {
-  const router = useRouter();
   const { data: session, status } = useSession();
+  
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session?.user?.email) router.push("/sign-in");
+  }, [session, status, router]);
+
   const queryClient = useQueryClient();
 
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
@@ -44,11 +51,6 @@ export default function TodosPage() {
     tags: "",
     priority: "medium",
   });
-
-  useEffect(() => {
-    if (status === "loading") return;
-    if (!session?.user) router.push("/sign-in");
-  }, [session, status, router]);
 
   const { data: todos, isLoading } = useQuery<Todo[]>({
     queryKey: ["todos"],

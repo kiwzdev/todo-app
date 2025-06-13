@@ -8,14 +8,14 @@ import { useLoadingStore } from "@/stores/useLoadingStore";
 import Loading from "@/components/Loading";
 
 export default function SignInPage() {
+  const { data: session, status } = useSession();
+
   const router = useRouter();
 
-  const { data: session, status } = useSession();
   useEffect(() => {
-    if (status === "authenticated" && session) {
-      router.push("/");
-    }
-  }, [status, session, router]);
+    if (status === "loading") return;
+    if (session?.user?.email) router.push("/todos");
+  }, [session, status, router]);
 
   const { isLoading, setLoading } = useLoadingStore();
 
@@ -23,7 +23,7 @@ export default function SignInPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  }
+  };
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +45,7 @@ export default function SignInPage() {
     } catch (err) {
       setError("Something went wrong");
       toast.error("Something went wrong, " + err);
-    } finally{
+    } finally {
       setLoading(false);
     }
   };
