@@ -69,6 +69,7 @@ export default function SignInPage() {
               Email address
             </label>
             <input
+              name="email"
               type="email"
               required
               value={formData.email}
@@ -82,6 +83,7 @@ export default function SignInPage() {
               Password
             </label>
             <input
+              name="password"
               type="password"
               required
               value={formData.password}
