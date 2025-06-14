@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { Dialog } from "@headlessui/react";
 import Footer from "@/components/Footer";
 import { todoSchema, todoUpdateSchema } from "@/lib/validations/todoSchema";
+import toast from "react-hot-toast";
 
 type Todo = {
   _id: string;
@@ -70,6 +71,7 @@ export default function TodosPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
       setFormErrors({});
+      toast.success("Todo added!");
     },
   });
 
@@ -88,12 +90,16 @@ export default function TodosPage() {
         priority: "medium",
       });
       setIsModalOpen(false);
+      toast.success("Todo updated!");
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => axios.delete("/api/todos", { data: { id } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+      toast.success("Todo deleted!");
+    },
   });
 
   const handleAdd = () => {
@@ -198,7 +204,7 @@ export default function TodosPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <div className="min-h-screen px-4 py-8 bg-gray-50 dark:bg-gray-900">
+          <div className="min-h-screen px-4 py-8 bg-gray-50 dark:bg-gray-950">
             <div className="md:mx-25">
               <div className="space-y-4">
                 <Dialog
@@ -212,7 +218,7 @@ export default function TodosPage() {
                   />
                   <div className="fixed inset-0 flex items-center justify-center p-4">
                     <Dialog.Panel className="max-w-md w-full bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-4">
-                      <Dialog.Title className="text-xl font-bold text-gray-900 dark:text-white">
+                      <Dialog.Title className="text-xl font-bold text-gray-900 dark:text-gray-100">
                         Edit Todo
                       </Dialog.Title>
 
@@ -222,7 +228,7 @@ export default function TodosPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, title: e.target.value })
                         }
-                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
                       {editingFormErrors.title && (
                         <p className="text-red-500 text-sm">
@@ -238,7 +244,7 @@ export default function TodosPage() {
                             description: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
                       {editingFormErrors.description && (
                         <p className="text-red-500 text-sm">
@@ -251,7 +257,7 @@ export default function TodosPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, dueDate: e.target.value })
                         }
-                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
                       {editingFormErrors.dueDate && (
                         <p className="text-red-500 text-sm">
@@ -263,7 +269,7 @@ export default function TodosPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, priority: e.target.value })
                         }
-                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
@@ -280,7 +286,7 @@ export default function TodosPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, tags: e.target.value })
                         }
-                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
                       {editingFormErrors.tags && (
                         <p className="text-red-500 text-sm">
@@ -292,7 +298,7 @@ export default function TodosPage() {
                           onClick={() => {
                             handleUpdate();
                           }}
-                          className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg"
+                          className="flex-1 bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:hover:bg-green-500 text-white font-semibold py-2 rounded-lg dark:text-black"
                         >
                           {updateMutation.isPending ? "Saving..." : "Save"}
                         </button>
@@ -306,7 +312,7 @@ export default function TodosPage() {
                     </Dialog.Panel>
                   </div>
                 </Dialog>
-                <h2 className="text-3xl font-semibold text-gray-800 dark:text-white">
+                <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">
                   Add New Todo
                 </h2>
                 <input
@@ -315,8 +321,8 @@ export default function TodosPage() {
                   onChange={(e) =>
                     setNewTodoData({ ...newTodoData, title: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white
-             shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0
+                  className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100
+             shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0
             "
                 />
                 {formErrors.title && (
@@ -331,7 +337,7 @@ export default function TodosPage() {
                       description: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                  className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                 />
                 {formErrors.description && (
                   <p className="text-red-500 text-sm">
@@ -348,7 +354,7 @@ export default function TodosPage() {
                         dueDate: e.target.value,
                       })
                     }
-                    className="flex-1 px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                    className="flex-1 px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                   />
                   {formErrors.dueDate && (
                     <p className="text-red-500 text-sm">
@@ -363,7 +369,7 @@ export default function TodosPage() {
                         priority: e.target.value,
                       })
                     }
-                    className="w-40 px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                    className="w-40 px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -381,19 +387,19 @@ export default function TodosPage() {
                   onChange={(e) =>
                     setNewTodoData({ ...newTodoData, tags: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                  className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                 />
                 {formErrors.tags && (
                   <p className="text-red-500 text-sm">{formErrors.tags[0]}</p>
                 )}
                 <button
                   onClick={handleAdd}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg "
+                  className="w-full bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:text-black dark:hover:bg-green-500 text-white font-semibold py-2 rounded-lg "
                 >
                   {addMutation.isPending ? "Adding..." : "Add Todo"}
                 </button>
               </div>
-              <h2 className="text-3xl mt-4 font-semibold text-gray-800 dark:text-white">
+              <h2 className="text-3xl mt-4 font-semibold text-gray-800 dark:text-gray-100">
                 My Todos
               </h2>
               <div className="flex flex-col sm:flex-row gap-4 my-4">
@@ -435,7 +441,7 @@ export default function TodosPage() {
                 {filteredTodos?.map((todo) => (
                   <li
                     key={todo._id}
-                    className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm"
+                    className="flex flex-col bg-green-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm light:shadow-green-100"
                   >
                     {/* บรรทัด Title + ปุ่ม Edit/Delete */}
                     <div className="flex justify-between items-start">
@@ -444,7 +450,7 @@ export default function TodosPage() {
                           "text-lg font-semibold flex items-center gap-2",
                           todo.completed
                             ? "text-green-400"
-                            : "text-gray-800 dark:text-white"
+                            : "text-gray-800 dark:text-gray-100"
                         )}
                       >
                         {todo.completed && (
@@ -494,7 +500,7 @@ export default function TodosPage() {
                             todo.tags.map((tag, i) => (
                               <span
                                 key={i}
-                                className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white px-2 py-0.5 rounded-full flex items-center"
+                                className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-100 px-2 py-0.5 rounded-full flex items-center"
                               >
                                 #{tag}
                               </span>

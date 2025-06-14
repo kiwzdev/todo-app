@@ -14,12 +14,12 @@ export default function Navbar({ session }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-green-300 dark:bg-gray-900 shadow px-4 py-3">
+    <nav className="bg-green-300 dark:bg-green-700 shadow px-4 py-3">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo / Web Name */}
         <Link
           href="/todos"
-          className="text-2xl font-bold text-gray-800 dark:text-white"
+          className="text-2xl font-bold text-gray-800 dark:text-gray-100"
         >
           Welcome, {session?.user.username}
         </Link>
@@ -30,7 +30,7 @@ export default function Navbar({ session }: NavbarProps) {
           {session && (
             <Link
               href="/profile"
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-500"
+              className="text-gray-700 dark:text-gray-100 hover:text-blue-500"
             >
               My Account
             </Link>
@@ -40,7 +40,7 @@ export default function Navbar({ session }: NavbarProps) {
             <>
               <Link
                 href="/sign-in"
-                className="text-gray-700 dark:text-gray-200 hover:text-blue-500"
+                className="text-gray-700 dark:text-gray-100 hover:text-blue-500"
               >
                 Log in
               </Link>
@@ -53,7 +53,7 @@ export default function Navbar({ session }: NavbarProps) {
             </>
           ) : (
             <p
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-500 cursor-pointer"
+              className="text-gray-700 dark:text-gray-100 hover:text-blue-500 cursor-pointer"
               onClick={() => signOut({ callbackUrl: "/" })}
             >
               Log out
@@ -77,7 +77,7 @@ export default function Navbar({ session }: NavbarProps) {
           {session && (
             <Link
               href="/profile"
-              className="block text-gray-700 dark:text-gray-200 hover:text-blue-500"
+              className="block text-gray-700 dark:text-gray-100 hover:text-blue-500"
             >
               My Account
             </Link>
@@ -86,7 +86,7 @@ export default function Navbar({ session }: NavbarProps) {
             <>
               <Link
                 href="/sign-in"
-                className="block text-gray-700 dark:text-gray-200 hover:text-blue-500"
+                className="block text-gray-700 dark:text-gray-100 hover:text-blue-500"
               >
                 Log in
               </Link>
@@ -99,7 +99,7 @@ export default function Navbar({ session }: NavbarProps) {
             </>
           ) : (
             <p
-              className="block text-gray-700 dark:text-gray-200 hover:text-blue-500 cursor-pointer"
+              className="block text-gray-700 dark:text-gray-100 hover:text-blue-500 cursor-pointer"
               onClick={() => signOut()}
             >
               Log out

@@ -135,8 +135,9 @@ export default function ProfilePage() {
     return (
       <>
         <Navbar session={session} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-8 w-full max-w-md">
+
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 p-4">
+          <div className="bg-green-100 dark:bg-gray-900 rounded-lg shadow-xl p-8 w-full max-w-md transition-colors duration-300">
             <div className="flex flex-col items-center space-y-4">
               <Image
                 src={
@@ -147,7 +148,7 @@ export default function ProfilePage() {
                 width={100}
                 height={100}
                 alt="Profile"
-                className="w-36 h-36 rounded-full object-cover border-1 p-2"
+                className="w-36 h-36 rounded-full object-cover border border-green-500 p-2"
                 unoptimized
               />
               {isEditing && (
@@ -162,7 +163,7 @@ export default function ProfilePage() {
                   />
                   <label
                     htmlFor="upload"
-                    className="cursor-pointer bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 text-sm"
+                    className="cursor-pointer bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm transition"
                   >
                     Upload New Image
                   </label>
@@ -172,7 +173,7 @@ export default function ProfilePage() {
 
             <div className="mt-6 space-y-4">
               <div>
-                <label className="block font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                <label className="block font-semibold text-black dark:text-gray-200 mb-1">
                   Username
                 </label>
                 <input
@@ -180,14 +181,14 @@ export default function ProfilePage() {
                   value={isEditing ? tempData.username : formData.username}
                   onChange={handleChange}
                   readOnly={!isEditing}
-                  className={`w-full px-4 py-2 rounded shadow text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 ${
-                    isEditing ? "border-indigo-500" : "border-transparent"
-                  }`}
+                  className={`w-full px-4 py-2 rounded shadow text-black dark:text-white bg-white dark:bg-gray-800 border dark:border-gray-700 ${
+                    isEditing ? "border-green-500" : "border-transparent"
+                  } transition-colors`}
                   placeholder="Enter your username"
                 />
               </div>
               <div>
-                <label className="block font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                <label className="block font-semibold text-black dark:text-gray-200 mb-1">
                   Email
                 </label>
                 <input
@@ -196,15 +197,15 @@ export default function ProfilePage() {
                   onChange={handleChange}
                   type="email"
                   readOnly={!isEditing}
-                  className={`w-full px-4 py-2 rounded shadow text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 ${
-                    isEditing ? "border-indigo-500" : "border-transparent"
-                  }`}
+                  className={`w-full px-4 py-2 rounded shadow text-black dark:text-white bg-white dark:bg-gray-800 border dark:border-gray-700 ${
+                    isEditing ? "border-green-500" : "border-transparent"
+                  } transition-colors`}
                   placeholder="Enter your email"
                 />
               </div>
               <Link
                 href="#"
-                className="text-sm text-gray-800 hover:underline mt-1 inline-block cursor-pointer"
+                className="text-sm text-green-600 dark:text-green-400 hover:underline mt-1 inline-block cursor-pointer transition"
                 onClick={(e) => {
                   e.preventDefault();
                   // logic เปลี่ยนหน้า หรือเปิด modal เปลี่ยนรหัสผ่าน
@@ -235,7 +236,7 @@ export default function ProfilePage() {
                   <button
                     onClick={handleSubmit}
                     disabled={mutation.isPending}
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Save
                   </button>
@@ -244,6 +245,7 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
         <Footer />
       </>
     );

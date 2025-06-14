@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang="en" className={lexendDeca.className} suppressHydrationWarning>
       <Providers>
         <AuthProvider>
-          <body className="bg-gray-50">
+          <body className="bg-gray-50 dark:bg-gray-950 dark:text-gray-100">
             <ThemeProvider attribute="class" enableSystem defaultTheme="system">
               <Toaster position="top-center" />
               {children}
