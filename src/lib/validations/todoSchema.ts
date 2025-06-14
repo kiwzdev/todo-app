@@ -26,10 +26,19 @@ export const todoSchema = z.object({
     .refine(
       (val) => {
         if (!val) return true;
-        const tags = val.split(",").map((tag) => tag.trim());
-        return tags.length <= 5;
+        const tags = val
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag !== "");
+
+        const hasTooMany = tags.length > 5;
+        const hasDuplicates = new Set(tags).size !== tags.length;
+
+        return !hasTooMany && !hasDuplicates;
       },
-      { message: "You can enter up to 5 tags only" }
+      {
+        message: "You can enter up to 5 unique tags only",
+      }
     ),
 
   priority: z.enum(["low", "medium", "high"]),
