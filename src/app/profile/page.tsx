@@ -12,7 +12,6 @@ import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import Loading from "@/components/Loading";
-import { useLoadingStore } from "@/stores/useLoadingStore";
 
 const updateProfile = async (formData: FormData) => {
   const response = await axios.put("/api/profile", formData, {
@@ -33,28 +32,22 @@ export default function ProfilePage() {
   });
   const [tempData, setTempData] = useState(formData);
   const [isEditing, setIsEditing] = useState(false);
-  const {isLoading, setLoading} = useLoadingStore();
 
   // ref เก็บ URL object เพื่อเคลียร์ memory
   const imageURLRef = useRef<string | null>(null);
 
   // ตั้งค่า formData และ tempData เมื่อ session โหลดเสร็จ
   useEffect(() => {
-    setLoading(true);
-    if (status === "loading") return;
-    if (!session?.user?.email) {
-      router.push("/sign-in");
-      return;
-    }
-    setLoading(false)
+    if (status == "unauthenticated") router.push("/sign-in");
+
     setFormData({
-      username: session.user.username ?? "",
-      email: session.user.email ?? "",
+      username: session?.user.username ?? "",
+      email: session?.user.email ?? "",
       image: null,
     });
     setTempData({
-      username: session.user.username ?? "",
-      email: session.user.email ?? "",
+      username: session?.user.username ?? "",
+      email: session?.user.email ?? "",
       image: null,
     });
   }, [session, status, router]);
@@ -77,7 +70,9 @@ export default function ProfilePage() {
 
   const mutation = useMutation({
     mutationFn: updateProfile,
-    onSuccess: async (data: { user: { username: string; email: string; image?: string }}) => {
+    onSuccess: async (data: {
+      user: { username: string; email: string; image?: string };
+    }) => {
       toast.success("Profile updated!");
       console.log(data);
       setFormData(tempData);
@@ -135,121 +130,121 @@ export default function ProfilePage() {
     mutation.mutateAsync(data);
   };
 
-  if(isLoading || status === "loading") return <Loading/>;
+  if (status === "loading") return <Loading />;
+  if (status === "authenticated")
+    return (
+      <>
+        <Navbar session={session} />
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-8 w-full max-w-md">
+            <div className="flex flex-col items-center space-y-4">
+              <Image
+                src={
+                  tempData.image
+                    ? imageURLRef.current || DEFAULT_PROFILE
+                    : DEFAULT_PROFILE
+                }
+                width={100}
+                height={100}
+                alt="Profile"
+                className="w-36 h-36 rounded-full object-cover border-1 p-2"
+                unoptimized
+              />
+              {isEditing && (
+                <>
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="hidden"
+                    id="upload"
+                  />
+                  <label
+                    htmlFor="upload"
+                    className="cursor-pointer bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 text-sm"
+                  >
+                    Upload New Image
+                  </label>
+                </>
+              )}
+            </div>
 
-  return (
-    <>
-      <Navbar session={session} />
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950 p-4">
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-8 w-full max-w-md">
-          <div className="flex flex-col items-center space-y-4">
-            <Image
-              src={
-                tempData.image
-                  ? imageURLRef.current || DEFAULT_PROFILE
-                  : DEFAULT_PROFILE
-              }
-              width={100}
-              height={100}
-              alt="Profile"
-              className="w-36 h-36 rounded-full object-cover border-1 p-2"
-              unoptimized
-            />
-            {isEditing && (
-              <>
-                <input
-                  type="file"
-                  name="image"
-                  accept="image/*"
-                  onChange={handleChange}
-                  className="hidden"
-                  id="upload"
-                />
-                <label
-                  htmlFor="upload"
-                  className="cursor-pointer bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 text-sm"
-                >
-                  Upload New Image
+            <div className="mt-6 space-y-4">
+              <div>
+                <label className="block font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                  Username
                 </label>
-              </>
-            )}
-          </div>
-
-          <div className="mt-6 space-y-4">
-            <div>
-              <label className="block font-semibold text-gray-700 dark:text-gray-200 mb-1">
-                Username
-              </label>
-              <input
-                name="username"
-                value={isEditing ? tempData.username : formData.username}
-                onChange={handleChange}
-                readOnly={!isEditing}
-                className={`w-full px-4 py-2 rounded shadow text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 ${
-                  isEditing ? "border-indigo-500" : "border-transparent"
-                }`}
-                placeholder="Enter your username"
-              />
-            </div>
-            <div>
-              <label className="block font-semibold text-gray-700 dark:text-gray-200 mb-1">
-                Email
-              </label>
-              <input
-                name="email"
-                value={isEditing ? tempData.email : formData.email}
-                onChange={handleChange}
-                type="email"
-                readOnly={!isEditing}
-                className={`w-full px-4 py-2 rounded shadow text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 ${
-                  isEditing ? "border-indigo-500" : "border-transparent"
-                }`}
-                placeholder="Enter your email"
-              />
-            </div>
-            <Link
-              href="#"
-              className="text-sm text-gray-800 hover:underline mt-1 inline-block cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                // logic เปลี่ยนหน้า หรือเปิด modal เปลี่ยนรหัสผ่าน
-              }}
-            >
-              Change password
-            </Link>
-          </div>
-
-          <div className="mt-6 flex justify-end space-x-4">
-            {!isEditing ? (
-              <button
-                onClick={handleEditClick}
-                disabled={mutation.isPending}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                <input
+                  name="username"
+                  value={isEditing ? tempData.username : formData.username}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                  className={`w-full px-4 py-2 rounded shadow text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 ${
+                    isEditing ? "border-indigo-500" : "border-transparent"
+                  }`}
+                  placeholder="Enter your username"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                  Email
+                </label>
+                <input
+                  name="email"
+                  value={isEditing ? tempData.email : formData.email}
+                  onChange={handleChange}
+                  type="email"
+                  readOnly={!isEditing}
+                  className={`w-full px-4 py-2 rounded shadow text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 ${
+                    isEditing ? "border-indigo-500" : "border-transparent"
+                  }`}
+                  placeholder="Enter your email"
+                />
+              </div>
+              <Link
+                href="#"
+                className="text-sm text-gray-800 hover:underline mt-1 inline-block cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // logic เปลี่ยนหน้า หรือเปิด modal เปลี่ยนรหัสผ่าน
+                }}
               >
-                Edit Profile
-              </button>
-            ) : (
-              <>
+                Change password
+              </Link>
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-4">
+              {!isEditing ? (
                 <button
-                  onClick={handleCancel}
+                  onClick={handleEditClick}
                   disabled={mutation.isPending}
                   className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Cancel
+                  Edit Profile
                 </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={mutation.isPending}
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Save
-                </button>
-              </>
-            )}
+              ) : (
+                <>
+                  <button
+                    onClick={handleCancel}
+                    disabled={mutation.isPending}
+                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={mutation.isPending}
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Save
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      <Footer />
-    </>
-  );
+        <Footer />
+      </>
+    );
 }

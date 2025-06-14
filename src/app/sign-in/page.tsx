@@ -4,7 +4,6 @@ import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { useLoadingStore } from "@/stores/useLoadingStore";
 import Loading from "@/components/Loading";
 
 export default function SignInPage() {
@@ -13,11 +12,8 @@ export default function SignInPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "loading") return;
-    if (session?.user?.email) router.push("/todos");
+    if (status == "authenticated") router.push("/todos");
   }, [session, status, router]);
-
-  const { isLoading, setLoading } = useLoadingStore();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
 
@@ -29,7 +25,6 @@ export default function SignInPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      setLoading(true);
       const res = await signIn("credentials", {
         redirect: false,
         email: formData.email,
@@ -46,14 +41,11 @@ export default function SignInPage() {
     } catch (err) {
       setError("Something went wrong");
       toast.error("Something went wrong, " + err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  if (isLoading || status === "loading") return <Loading />;
-
-  return (
+  if(status === "loading")return <Loading />;
+  if(status === "unauthenticated") return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">
