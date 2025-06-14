@@ -54,7 +54,7 @@ export default function Navbar({ session }: NavbarProps) {
           ) : (
             <p
               className="text-gray-700 dark:text-gray-200 hover:text-blue-500 cursor-pointer"
-              onClick={() => signOut()}
+              onClick={() => signOut({ callbackUrl: "/" })}
             >
               Log out
             </p>

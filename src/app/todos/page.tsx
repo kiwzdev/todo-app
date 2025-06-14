@@ -144,6 +144,22 @@ export default function TodosPage() {
     });
   };
 
+  // Search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPriority, setSelectedPriority] = useState(""); // "", "high", "medium", "low"
+
+  // Filter
+  const filteredTodos = todos?.filter((todo) => {
+    const matchSearch = todo.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const matchPriority =
+      selectedPriority === "" || todo.priority === selectedPriority;
+
+    return matchSearch && matchPriority;
+  });
+
   if (status === "loading") return <Loading />;
   if (status === "authenticated")
     return (
@@ -290,9 +306,46 @@ export default function TodosPage() {
                 {addMutation.isPending ? "Adding..." : "Add Todo"}
               </button>
             </div>
+            <h2 className="text-3xl mt-4 font-semibold text-gray-800 dark:text-white">
+              My Todos
+            </h2>
+            <div className="flex flex-col sm:flex-row gap-4 my-4">
+              <div className="relative w-full sm:w-1/2">
+                <input
+                  type="text"
+                  placeholder="Search todos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full p-2 border rounded-md pr-10" // pr-10 = เว้นที่ให้ปุ่มอยู่ใน input
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
 
-            <ul className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {todos?.map((todo) => (
+              <select
+                value={selectedPriority}
+                onChange={(e) => setSelectedPriority(e.target.value)}
+                className="w-full sm:w-1/4 p-2 border rounded-md"
+              >
+                <option value="">All Priorities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredTodos?.length === 0 && (
+                <p className="col-span-3 text-center mt-16 text-2xl text-gray-500 dark:text-gray-400">
+                  No todos found
+                </p>
+              )}
+              {filteredTodos?.map((todo) => (
                 <li
                   key={todo._id}
                   className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm"
