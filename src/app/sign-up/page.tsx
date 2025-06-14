@@ -6,6 +6,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import Loading from "@/components/Loading";
+import { userSchema } from "@/lib/validations/userSchema";
 
 export default function SignUpPage() {
   const { data: session, status } = useSession();
@@ -22,6 +23,7 @@ export default function SignUpPage() {
     password: "",
     confirmPassword: "",
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
 
   const [error, setError] = useState("");
 
@@ -33,28 +35,40 @@ export default function SignUpPage() {
     e.preventDefault();
     setError("");
 
-    if (formData.password !== formData.confirmPassword) {
-      return setError("Passwords do not match");
-    }
-
     try {
-      const res = await axios.post("/api/auth/sign-up", {
+      // Validation
+      const result = userSchema.safeParse(formData);
+      if (!result.success) {
+        const { fieldErrors } = result.error.flatten();
+        setFormErrors(fieldErrors);
+        return;
+      }
+
+      await axios.post("/api/auth/sign-up", {
         username: formData.username,
         email: formData.email,
         password: formData.password,
       });
 
-      if (res.status === 201) {
-        toast.success("สมัครสมาชิกสำเร็จ!");
-        router.push("/sign-in");
+      toast.success("สมัครสมาชิกสำเร็จ!");
+      router.push("/sign-in");
+    } catch (err) {
+      // Type guard
+      if (axios.isAxiosError(err)) {
+        const message =
+          err.response?.data?.message || "เกิดข้อผิดพลาดจากฝั่งเซิร์ฟเวอร์";
+
+        if (err.response?.status === 409) {
+          setError("User already exists");
+          toast.error("ชื่อผู้ใช้หรืออีเมลถูกใช้แล้ว!");
+        } else {
+          setError(message);
+          toast.error(message);
+        }
+      } else {
+        setError("Something went wrong");
+        toast.error("เกิดข้อผิดพลาดบางอย่าง");
       }
-      if (res.status === 409) {
-        setError("User already exists");
-        toast.error("ชื่อหรืออีเมลถูกใช้แล้ว!");
-      }
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Something went wrong");
     }
   };
   if (status === "loading") return <Loading />;
@@ -82,6 +96,9 @@ export default function SignUpPage() {
                 onChange={handleChange}
                 className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               />
+              {formErrors.username && (
+                <p className="text-red-500 text-sm">{formErrors.username[0]}</p>
+              )}
             </div>
 
             <div>
@@ -96,6 +113,9 @@ export default function SignUpPage() {
                 onChange={handleChange}
                 className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               />
+              {formErrors.email && (
+                <p className="text-red-500 text-sm">{formErrors.email[0]}</p>
+              )}
             </div>
 
             <div>
@@ -110,6 +130,9 @@ export default function SignUpPage() {
                 onChange={handleChange}
                 className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               />
+              {formErrors.password && (
+                <p className="text-red-500 text-sm">{formErrors.password[0]}</p>
+              )}
             </div>
 
             <div>
@@ -124,6 +147,11 @@ export default function SignUpPage() {
                 onChange={handleChange}
                 className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               />
+              {formErrors.confirmPassword && (
+                <p className="text-red-500 text-sm">
+                  {formErrors.confirmPassword[0]}
+                </p>
+              )}
             </div>
 
             <button

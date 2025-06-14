@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 
 import { Dialog } from "@headlessui/react";
 import Footer from "@/components/Footer";
+import { todoSchema, todoUpdateSchema } from "@/lib/validations/todoSchema";
 
 type Todo = {
   _id: string;
@@ -53,6 +54,11 @@ export default function TodosPage() {
     tags: "",
     priority: "medium",
   });
+  // Form Errors
+  const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
+  const [editingFormErrors, setEditingFormErrors] = useState<
+    Record<string, string[]>
+  >({});
 
   const { data: todos } = useQuery<Todo[]>({
     queryKey: ["todos"],
@@ -87,16 +93,20 @@ export default function TodosPage() {
   });
 
   const handleAdd = () => {
-    if (!newTodoData.title.trim()) return;
+    const validation = todoSchema.safeParse(newTodoData);
+    if (!validation.success) {
+      const { fieldErrors } = validation.error.flatten();
+      setFormErrors(fieldErrors);
+      return;
+    }
+
+    const parsed = validation.data;
     const payload = {
-      title: newTodoData.title,
-      description: newTodoData.description,
-      dueDate: newTodoData.dueDate || undefined,
-      tags: newTodoData.tags
-        ? newTodoData.tags.split(",").map((t) => t.trim())
-        : [],
-      priority: newTodoData.priority as Todo["priority"],
+      ...parsed,
+      tags: parsed.tags ? parsed.tags.split(",").map((t) => t.trim()) : [],
+      dueDate: parsed.dueDate || undefined,
     };
+
     addMutation.mutate(payload, {
       onSuccess: () =>
         setNewTodoData({
@@ -110,16 +120,28 @@ export default function TodosPage() {
   };
 
   const handleUpdate = () => {
-    if (!formData.title.trim() || !editingTodo) return;
-    const payload = {
-      title: formData.title,
-      description: formData.description,
-      dueDate: formData.dueDate || undefined,
-      tags: formData.tags ? formData.tags.split(",").map((t) => t.trim()) : [],
-      priority: formData.priority as Todo["priority"],
+    if (!editingTodo) return;
+
+    const validation = todoUpdateSchema.safeParse({
+      ...formData,
       id: editingTodo._id,
+    });
+
+    if (!validation.success) {
+      const { fieldErrors } = validation.error.flatten();
+      setEditingFormErrors(fieldErrors);
+      return;
+    }
+
+    const parsed = validation.data;
+    const payload = {
+      ...parsed,
+      tags: parsed.tags ? parsed.tags.split(",").map((t) => t.trim()) : [],
+      dueDate: parsed.dueDate || undefined,
     };
+
     updateMutation.mutate(payload);
+    closeModal();
   };
 
   const startEdit = (todo: Todo) => {
@@ -198,6 +220,11 @@ export default function TodosPage() {
                         }
                         className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
+                      {editingFormErrors.title && (
+                        <p className="text-red-500 text-sm">
+                          {editingFormErrors.title[0]}
+                        </p>
+                      )}
                       <textarea
                         placeholder="Description"
                         value={formData.description}
@@ -209,6 +236,11 @@ export default function TodosPage() {
                         }
                         className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
+                      {editingFormErrors.description && (
+                        <p className="text-red-500 text-sm">
+                          {editingFormErrors.description[0]}
+                        </p>
+                      )}
                       <input
                         type="date"
                         value={formData.dueDate}
@@ -217,6 +249,11 @@ export default function TodosPage() {
                         }
                         className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
+                      {editingFormErrors.dueDate && (
+                        <p className="text-red-500 text-sm">
+                          {editingFormErrors.dueDate[0]}
+                        </p>
+                      )}
                       <select
                         value={formData.priority}
                         onChange={(e) =>
@@ -228,6 +265,11 @@ export default function TodosPage() {
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
                       </select>
+                      {editingFormErrors.priority && (
+                        <p className="text-red-500 text-sm">
+                          {editingFormErrors.priority[0]}
+                        </p>
+                      )}
                       <input
                         placeholder="Tags (comma separated)"
                         value={formData.tags}
@@ -236,11 +278,15 @@ export default function TodosPage() {
                         }
                         className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
+                      {editingFormErrors.tags && (
+                        <p className="text-red-500 text-sm">
+                          {editingFormErrors.tags[0]}
+                        </p>
+                      )}
                       <div className="flex gap-2 pt-2">
                         <button
                           onClick={() => {
                             handleUpdate();
-                            setIsModalOpen(false);
                           }}
                           className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg"
                         >
@@ -267,8 +313,11 @@ export default function TodosPage() {
                   }
                   className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white
              shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0
-             "
+            "
                 />
+                {formErrors.title && (
+                  <p className="text-red-500 text-sm">{formErrors.title[0]}</p>
+                )}
                 <textarea
                   placeholder="Description"
                   value={newTodoData.description}
@@ -280,6 +329,11 @@ export default function TodosPage() {
                   }
                   className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                 />
+                {formErrors.description && (
+                  <p className="text-red-500 text-sm">
+                    {formErrors.description[0]}
+                  </p>
+                )}
                 <div className="flex gap-2">
                   <input
                     type="date"
@@ -292,6 +346,11 @@ export default function TodosPage() {
                     }
                     className="flex-1 px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                   />
+                  {formErrors.dueDate && (
+                    <p className="text-red-500 text-sm">
+                      {formErrors.dueDate[0]}
+                    </p>
+                  )}
                   <select
                     value={newTodoData.priority}
                     onChange={(e) =>
@@ -306,6 +365,11 @@ export default function TodosPage() {
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
                   </select>
+                  {formErrors.priority && (
+                    <p className="text-red-500 text-sm">
+                      {formErrors.priority[0]}
+                    </p>
+                  )}
                 </div>
                 <input
                   placeholder="Tags (comma-separated)"
@@ -315,6 +379,9 @@ export default function TodosPage() {
                   }
                   className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                 />
+                {formErrors.tags && (
+                  <p className="text-red-500 text-sm">{formErrors.tags[0]}</p>
+                )}
                 <button
                   onClick={handleAdd}
                   className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg "
