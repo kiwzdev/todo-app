@@ -24,7 +24,6 @@ export default function SignUpPage() {
   });
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,7 +32,6 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
     if (formData.password !== formData.confirmPassword) {
       return setError("Passwords do not match");
@@ -47,9 +45,8 @@ export default function SignUpPage() {
       });
 
       if (res.status === 201) {
-        setSuccess("Account created! Redirecting...");
         toast.success("สมัครสมาชิกสำเร็จ!");
-        router.push("/sign-up")
+        router.push("/sign-in")
       }
       if (res.status === 409) {
         setError("User already exists");
@@ -70,9 +67,6 @@ export default function SignUpPage() {
 
         {error && (
           <p className="mb-4 text-sm text-red-500 text-center">{error}</p>
-        )}
-        {success && (
-          <p className="mb-4 text-sm text-green-500 text-center">{success}</p>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
