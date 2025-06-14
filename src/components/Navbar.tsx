@@ -18,7 +18,7 @@ export default function Navbar({ session }: NavbarProps) {
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo / Web Name */}
         <Link
-          href="/"
+          href="/todos"
           className="text-2xl font-bold text-gray-800 dark:text-white"
         >
           Welcome, {session?.user.username}
@@ -39,13 +39,13 @@ export default function Navbar({ session }: NavbarProps) {
           {!session ? (
             <>
               <Link
-                href="/sign-in"
+                href="/auth/sign-in"
                 className="text-gray-700 dark:text-gray-200 hover:text-blue-500"
               >
                 Log in
               </Link>
               <Link
-                href="/sign-up"
+                href="/auth/sign-up"
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
                 Sign up
@@ -85,13 +85,13 @@ export default function Navbar({ session }: NavbarProps) {
           {!session ? (
             <>
               <Link
-                href="/sign-in"
+                href="/auth/sign-in"
                 className="block text-gray-700 dark:text-gray-200 hover:text-blue-500"
               >
                 Log in
               </Link>
               <Link
-                href="/sign-up"
+                href="/auth/sign-up"
                 className="block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
                 Sign up

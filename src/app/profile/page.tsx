@@ -11,6 +11,8 @@ import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
+import Loading from "@/components/Loading";
+import { useLoadingStore } from "@/stores/useLoadingStore";
 
 const updateProfile = async (formData: FormData) => {
   const response = await axios.put("/api/profile", formData, {
@@ -31,17 +33,20 @@ export default function ProfilePage() {
   });
   const [tempData, setTempData] = useState(formData);
   const [isEditing, setIsEditing] = useState(false);
+  const {isLoading, setLoading} = useLoadingStore();
 
   // ref เก็บ URL object เพื่อเคลียร์ memory
   const imageURLRef = useRef<string | null>(null);
 
   // ตั้งค่า formData และ tempData เมื่อ session โหลดเสร็จ
   useEffect(() => {
+    setLoading(true);
     if (status === "loading") return;
     if (!session?.user?.email) {
-      router.push("/sign-in");
+      router.push("/auth/sign-in");
       return;
     }
+    setLoading(false)
     setFormData({
       username: session.user.username ?? "",
       email: session.user.email ?? "",
@@ -129,6 +134,8 @@ export default function ProfilePage() {
     }
     mutation.mutateAsync(data);
   };
+
+  if(isLoading || status === "loading") return <Loading/>;
 
   return (
     <>

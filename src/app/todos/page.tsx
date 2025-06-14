@@ -151,7 +151,7 @@ export default function TodosPage() {
     <>
       <Navbar session={session} />
       <div className="min-h-screen px-4 py-8 bg-gray-50 dark:bg-gray-900">
-        <div className="mx-25">
+        <div className="md:mx-25">
           <div className="space-y-4">
             <Dialog
               open={isModalOpen}

@@ -49,7 +49,7 @@ export default function SignUpPage() {
       if (res.status === 201) {
         setSuccess("Account created! Redirecting...");
         toast.success("สมัครสมาชิกสำเร็จ!");
-        setTimeout(() => router.push("/sign-up"), 1500);
+        setTimeout(() => router.push("/auth/sign-up"), 1500);
       }
       if (res.status === 409) {
         setError("User already exists");
@@ -141,7 +141,7 @@ export default function SignUpPage() {
 
         <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-300">
           Already have an account?{" "}
-          <a href="/sign-in" className="text-blue-600 hover:underline">
+          <a href="/auth/sign-in" className="text-blue-600 hover:underline">
             Sign in
           </a>
         </p>
