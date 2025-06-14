@@ -25,12 +25,6 @@ export default function Footer() {
           >
             Contact
           </Link>
-          <Link
-            href="/privacy"
-            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
-            Privacy
-          </Link>
         </div>
       </div>
     </footer>

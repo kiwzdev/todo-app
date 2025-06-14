@@ -135,7 +135,7 @@ export default function ProfilePage() {
     return (
       <>
         <Navbar session={session} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-8 w-full max-w-md">
             <div className="flex flex-col items-center space-y-4">
               <Image
