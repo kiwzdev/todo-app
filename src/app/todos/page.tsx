@@ -67,7 +67,10 @@ export default function TodosPage() {
 
   const addMutation = useMutation({
     mutationFn: (newTodo: Partial<Todo>) => axios.post("/api/todos", newTodo),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+      setFormErrors({});
+    },
   });
 
   const updateMutation = useMutation({
@@ -76,6 +79,7 @@ export default function TodosPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
       setEditingTodo(null);
+      setEditingFormErrors({});
       setFormData({
         title: "",
         description: "",
