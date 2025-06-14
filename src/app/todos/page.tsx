@@ -181,9 +181,11 @@ export default function TodosPage() {
   // Search
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPriority, setSelectedPriority] = useState(""); // "", "high", "medium", "low"
+  const [selectedCompleted, setSelectedCompleted] = useState(""); // "", "completed", "incompleted"
 
   // Filter
   const filteredTodos = todos?.filter((todo) => {
+    // 
     const matchSearch = todo.title
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
@@ -191,7 +193,12 @@ export default function TodosPage() {
     const matchPriority =
       selectedPriority === "" || todo.priority === selectedPriority;
 
-    return matchSearch && matchPriority;
+    const matchCompleted =
+      selectedCompleted === "" ||
+      (selectedCompleted === "completed" && todo.completed) ||
+      (selectedCompleted === "incompleted" && !todo.completed);
+
+    return matchSearch && matchPriority && matchCompleted;
   });
 
   if (status === "loading") return <Loading />;
@@ -426,10 +433,33 @@ export default function TodosPage() {
                   onChange={(e) => setSelectedPriority(e.target.value)}
                   className="w-full sm:w-1/4 p-2 border rounded-md dark:bg-gray-950"
                 >
-                  <option className="dark:text-gray-100" value="">All Priorities</option>
-                  <option className="dark:text-gray-100" value="high">High</option>
-                  <option className="dark:text-gray-100" value="medium">Medium</option>
-                  <option className="dark:text-gray-100" value="low">Low</option>
+                  <option className="dark:text-gray-100" value="">
+                    All Priorities
+                  </option>
+                  <option className="dark:text-gray-100" value="high">
+                    High
+                  </option>
+                  <option className="dark:text-gray-100" value="medium">
+                    Medium
+                  </option>
+                  <option className="dark:text-gray-100" value="low">
+                    Low
+                  </option>
+                </select>
+                <select
+                  value={selectedCompleted}
+                  onChange={(e) => setSelectedCompleted(e.target.value)}
+                  className="w-full sm:w-1/4 p-2 border rounded-md dark:bg-gray-950"
+                >
+                  <option className="dark:text-gray-100" value="">
+                    All Status
+                  </option>
+                  <option className="dark:text-gray-100" value="completed">
+                    Completed
+                  </option>
+                  <option className="dark:text-gray-100" value="incompleted">
+                    Incompleted
+                  </option>
                 </select>
               </div>
               <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

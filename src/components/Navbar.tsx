@@ -19,7 +19,7 @@ export default function Navbar({ session }: NavbarProps) {
         {/* Logo / Web Name */}
         <Link
           href="/todos"
-          className="text-2xl font-bold text-gray-800 dark:text-gray-100"
+          className="text-3xl md:text-2xl font-bold text-gray-800 dark:text-gray-100"
         >
           Welcome, {session?.user.username}
         </Link>
@@ -64,20 +64,20 @@ export default function Navbar({ session }: NavbarProps) {
         {/* Mobile Menu Toggle */}
         <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? (
-            <X className="w-6 h-6 text-gray-800 dark:text-white" />
+            <X className="w-12 h-12 text-gray-800 dark:text-white" />
           ) : (
-            <Menu className="w-6 h-6 text-gray-800 dark:text-white" />
+            <Menu className="w-12 h-12 text-gray-800 dark:text-white" />
           )}
         </button>
       </div>
 
       {/* Mobile Dropdown */}
       {isOpen && (
-        <div className="md:hidden mt-2 space-y-2">
+        <div className="md:hidden mt-4 space-y-2 text-center">
           {session && (
             <Link
               href="/profile"
-              className="block text-gray-700 dark:text-gray-100 hover:text-blue-500"
+              className="block text-gray-700 dark:text-gray-100 hover:text-blue-500 text-2xl py-4"
             >
               My Account
             </Link>
@@ -86,20 +86,20 @@ export default function Navbar({ session }: NavbarProps) {
             <>
               <Link
                 href="/sign-in"
-                className="block text-gray-700 dark:text-gray-100 hover:text-blue-500"
+                className="block text-gray-700 dark:text-gray-100 hover:text-blue-500 text-2xl py-4"
               >
                 Log in
               </Link>
               <Link
                 href="/sign-up"
-                className="block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                className="block bg-blue-500 text-white px-4 rounded hover:bg-blue-600 py-4 text-2xl"
               >
                 Sign up
               </Link>
             </>
           ) : (
             <p
-              className="block text-gray-700 dark:text-gray-100 hover:text-blue-500 cursor-pointer"
+              className="block text-gray-700 dark:text-gray-100 hover:text-blue-500 cursor-pointer py-4 text-2xl"
               onClick={() => signOut()}
             >
               Log out
