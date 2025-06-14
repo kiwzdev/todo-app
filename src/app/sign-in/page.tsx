@@ -42,6 +42,7 @@ export default function SignInPage() {
         return;
       }
       toast.success("Sign in successful");
+      router.push("/todos");
     } catch (err) {
       setError("Something went wrong");
       toast.error("Something went wrong, " + err);
@@ -102,7 +103,7 @@ export default function SignInPage() {
 
         <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-300">
           Don&apos;t have an account?{" "}
-          <a href="/auth/sign-up" className="text-blue-600 hover:underline">
+          <a href="/sign-up" className="text-blue-600 hover:underline">
             Sign up
           </a>
         </p>

@@ -39,13 +39,13 @@ export default function Navbar({ session }: NavbarProps) {
           {!session ? (
             <>
               <Link
-                href="/auth/sign-in"
+                href="/sign-in"
                 className="text-gray-700 dark:text-gray-200 hover:text-blue-500"
               >
                 Log in
               </Link>
               <Link
-                href="/auth/sign-up"
+                href="/sign-up"
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
                 Sign up
@@ -85,13 +85,13 @@ export default function Navbar({ session }: NavbarProps) {
           {!session ? (
             <>
               <Link
-                href="/auth/sign-in"
+                href="/sign-in"
                 className="block text-gray-700 dark:text-gray-200 hover:text-blue-500"
               >
                 Log in
               </Link>
               <Link
-                href="/auth/sign-up"
+                href="/sign-up"
                 className="block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
                 Sign up

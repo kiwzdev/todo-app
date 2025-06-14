@@ -43,7 +43,7 @@ export default function ProfilePage() {
     setLoading(true);
     if (status === "loading") return;
     if (!session?.user?.email) {
-      router.push("/auth/sign-in");
+      router.push("/sign-in");
       return;
     }
     setLoading(false)

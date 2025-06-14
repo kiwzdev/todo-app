@@ -17,6 +17,8 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
+        if (!credentials) throw new Error("Missing credentials");
+        
         const email = credentials?.email;
         const password = credentials?.password;
 
@@ -57,11 +59,11 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
-        session.user = {
-          id: token.id as string,
-          email: token.email,
-          username: token.username,
-        };
+      session.user = {
+        id: token.id as string,
+        email: token.email,
+        username: token.username,
+      };
       return session;
     },
   },
