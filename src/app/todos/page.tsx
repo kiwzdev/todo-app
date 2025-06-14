@@ -424,12 +424,12 @@ export default function TodosPage() {
                 <select
                   value={selectedPriority}
                   onChange={(e) => setSelectedPriority(e.target.value)}
-                  className="w-full sm:w-1/4 p-2 border rounded-md"
+                  className="w-full sm:w-1/4 p-2 border rounded-md dark:bg-gray-950"
                 >
-                  <option value="">All Priorities</option>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
+                  <option className="dark:text-gray-100" value="">All Priorities</option>
+                  <option className="dark:text-gray-100" value="high">High</option>
+                  <option className="dark:text-gray-100" value="medium">Medium</option>
+                  <option className="dark:text-gray-100" value="low">Low</option>
                 </select>
               </div>
               <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
