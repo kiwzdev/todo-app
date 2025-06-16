@@ -163,7 +163,7 @@ export default function ProfilePage() {
                   />
                   <label
                     htmlFor="upload"
-                    className="cursor-pointer bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm transition"
+                    className="cursor-pointer dark:bg-green-500 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:hover:bg-green-600 text-sm transition"
                   >
                     Upload New Image
                   </label>
@@ -220,7 +220,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleEditClick}
                   disabled={mutation.isPending}
-                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500 dark:bg-gray-500 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Edit Profile
                 </button>
@@ -236,7 +236,7 @@ export default function ProfilePage() {
                   <button
                     onClick={handleSubmit}
                     disabled={mutation.isPending}
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="dark:bg-green-500 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Save
                   </button>
