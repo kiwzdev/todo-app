@@ -1,9 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import Loading from "@/components/Loading";
 import { Circle, Pencil, Trash } from "lucide-react";
 import clsx from "clsx";
@@ -13,7 +11,8 @@ import { motion } from "framer-motion";
 import { Dialog } from "@headlessui/react";
 import Footer from "@/components/Footer";
 import { todoSchema, todoUpdateSchema } from "@/lib/validations/todoSchema";
-import { useTodos } from "@/hooks/uesTodos";
+import { NewTodo, useTodos } from "@/hooks/useTodos";
+import TagsInput from "@/components/Todo/Tag/TagsInput";
 
 type Todo = {
   _id: string;
@@ -21,7 +20,7 @@ type Todo = {
   description?: string;
   completed: boolean;
   dueDate?: string;
-  tags: string[];
+  tags?: string[];
   priority: "low" | "medium" | "high";
 };
 
@@ -53,21 +52,22 @@ export default function TodosPage() {
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [newTodoData, setNewTodoData] = useState({
+  const [newTodoData, setNewTodoData] = useState<NewTodo>({
     title: "",
     description: "",
     dueDate: "",
-    tags: "",
+    tags: [] as string[],
     priority: "medium",
   });
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<NewTodo>({
     title: "",
     description: "",
     dueDate: "",
-    tags: "",
+    tags: [],
     priority: "medium",
   });
+
   // Form Errors
   const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
   const [editingFormErrors, setEditingFormErrors] = useState<
@@ -85,7 +85,6 @@ export default function TodosPage() {
     const parsed = validation.data;
     const payload = {
       ...parsed,
-      tags: parsed.tags ? parsed.tags.split(",").map((t) => t.trim()) : "",
       dueDate: parsed.dueDate || undefined,
     };
 
@@ -95,7 +94,7 @@ export default function TodosPage() {
           title: "",
           description: "",
           dueDate: "",
-          tags: "",
+          tags: [],
           priority: "medium",
         }),
     });
@@ -118,7 +117,7 @@ export default function TodosPage() {
     const parsed = validation.data;
     const payload = {
       ...parsed,
-      tags: parsed.tags ? parsed.tags.split(",").map((t) => t.trim()) : [],
+      tags: parsed.tags,
       dueDate: parsed.dueDate || undefined,
     };
 
@@ -132,7 +131,7 @@ export default function TodosPage() {
       title: todo.title,
       description: todo.description || "",
       dueDate: todo.dueDate || "",
-      tags: todo.tags.join(", "),
+      tags: todo.tags || [],
       priority: todo.priority,
     });
     setIsModalOpen(true);
@@ -145,7 +144,7 @@ export default function TodosPage() {
       title: "",
       description: "",
       dueDate: "",
-      tags: "",
+      tags: [],
       priority: "medium",
     });
   };
@@ -228,7 +227,7 @@ export default function TodosPage() {
                       <select
                         value={formData.priority}
                         onChange={(e) =>
-                          setFormData({ ...formData, priority: e.target.value })
+                          setFormData({ ...formData, priority: e.target.value as 'low' | 'medium' | 'high'  })
                         }
                         className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       >
@@ -241,14 +240,11 @@ export default function TodosPage() {
                           {editingFormErrors.priority[0]}
                         </p>
                       )}
-                      <input
-                        placeholder="Tags (comma separated)"
-                        value={formData.tags}
-                        onChange={(e) =>
-                          setFormData({ ...formData, tags: e.target.value })
-                        }
-                        className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                      <TagsInput
+                        formData={formData}
+                        setFormData={setFormData}
                       />
+
                       {editingFormErrors.tags && (
                         <p className="text-red-500 text-sm">
                           {editingFormErrors.tags[0]}
@@ -327,7 +323,7 @@ export default function TodosPage() {
                     onChange={(e) =>
                       setNewTodoData({
                         ...newTodoData,
-                        priority: e.target.value,
+                        priority: e.target.value as 'low' | 'medium' | 'high' ,
                       })
                     }
                     className="w-40 px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
@@ -342,13 +338,9 @@ export default function TodosPage() {
                     </p>
                   )}
                 </div>
-                <input
-                  placeholder="Tags (comma-separated)"
-                  value={newTodoData.tags}
-                  onChange={(e) =>
-                    setNewTodoData({ ...newTodoData, tags: e.target.value })
-                  }
-                  className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                <TagsInput
+                  formData={newTodoData}
+                  setFormData={setNewTodoData}
                 />
                 {formErrors.tags && (
                   <p className="text-red-500 text-sm">{formErrors.tags[0]}</p>

@@ -16,6 +16,13 @@ export type Todo = {
   tags: string[];
   priority: "low" | "medium" | "high";
 };
+export type NewTodo = {
+  title: string;
+  description?: string;
+  dueDate?: string;
+  tags: string[];
+  priority: "low" | "medium" | "high";
+};
 
 type TodoFilterState = {
   searchTerm: string;
