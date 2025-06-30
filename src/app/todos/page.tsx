@@ -13,7 +13,7 @@ import { motion } from "framer-motion";
 import { Dialog } from "@headlessui/react";
 import Footer from "@/components/Footer";
 import { todoSchema, todoUpdateSchema } from "@/lib/validations/todoSchema";
-import toast from "react-hot-toast";
+import { useTodos } from "@/hooks/uesTodos";
 
 type Todo = {
   _id: string;
@@ -35,7 +35,20 @@ export default function TodosPage() {
     if (status == "unauthenticated") router.push("/sign-in");
   }, [session, status, router]);
 
-  const queryClient = useQueryClient();
+  // ใช้ Custom Hook เพื่อจัดการ Logic ทั้งหมด
+  const {
+    // todos,
+    filteredTodos,
+    // isLoading,
+    // isError,
+    // filters,
+    // setFilters,
+    addTodo,
+    updateTodo,
+    isAdding,
+    isUpdating,
+    deleteTodo,
+  } = useTodos();
 
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,47 +74,6 @@ export default function TodosPage() {
     Record<string, string[]>
   >({});
 
-  const { data: todos } = useQuery<Todo[]>({
-    queryKey: ["todos"],
-    queryFn: () => axios.get("/api/todos").then((res) => res.data),
-  });
-
-  const addMutation = useMutation({
-    mutationFn: (newTodo: Partial<Todo>) => axios.post("/api/todos", newTodo),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-      setFormErrors({});
-      toast.success("Todo added!");
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (upd: Partial<Todo> & { id: string }) =>
-      axios.put("/api/todos", upd),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-      setEditingTodo(null);
-      setEditingFormErrors({});
-      setFormData({
-        title: "",
-        description: "",
-        dueDate: "",
-        tags: "",
-        priority: "medium",
-      });
-      setIsModalOpen(false);
-      toast.success("Todo updated!");
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => axios.delete("/api/todos", { data: { id } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-      toast.success("Todo deleted!");
-    },
-  });
-
   const handleAdd = () => {
     const validation = todoSchema.safeParse(newTodoData);
     if (!validation.success) {
@@ -113,11 +85,11 @@ export default function TodosPage() {
     const parsed = validation.data;
     const payload = {
       ...parsed,
-      tags: parsed.tags ? parsed.tags.split(",").map((t) => t.trim()) : [],
+      tags: parsed.tags ? parsed.tags.split(",").map((t) => t.trim()) : "",
       dueDate: parsed.dueDate || undefined,
     };
 
-    addMutation.mutate(payload, {
+    addTodo(payload, {
       onSuccess: () =>
         setNewTodoData({
           title: "",
@@ -150,7 +122,7 @@ export default function TodosPage() {
       dueDate: parsed.dueDate || undefined,
     };
 
-    updateMutation.mutate(payload);
+    updateTodo(payload);
     closeModal();
   };
 
@@ -182,24 +154,6 @@ export default function TodosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPriority, setSelectedPriority] = useState(""); // "", "high", "medium", "low"
   const [selectedCompleted, setSelectedCompleted] = useState(""); // "", "completed", "incompleted"
-
-  // Filter
-  const filteredTodos = todos?.filter((todo) => {
-    // 
-    const matchSearch = todo.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-
-    const matchPriority =
-      selectedPriority === "" || todo.priority === selectedPriority;
-
-    const matchCompleted =
-      selectedCompleted === "" ||
-      (selectedCompleted === "completed" && todo.completed) ||
-      (selectedCompleted === "incompleted" && !todo.completed);
-
-    return matchSearch && matchPriority && matchCompleted;
-  });
 
   if (status === "loading") return <Loading />;
   if (status === "authenticated")
@@ -307,7 +261,7 @@ export default function TodosPage() {
                           }}
                           className="flex-1 bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:hover:bg-green-500 text-white font-semibold py-2 rounded-lg dark:text-black"
                         >
-                          {updateMutation.isPending ? "Saving..." : "Save"}
+                          {isUpdating ? "Saving..." : "Save"}
                         </button>
                         <button
                           onClick={closeModal}
@@ -403,7 +357,7 @@ export default function TodosPage() {
                   onClick={handleAdd}
                   className="w-full bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:text-black dark:hover:bg-green-500 text-white font-semibold py-2 rounded-lg "
                 >
-                  {addMutation.isPending ? "Adding..." : "Add Todo"}
+                  {isAdding ? "Adding..." : "Add Todo"}
                 </button>
               </div>
               <h2 className="text-3xl mt-4 font-semibold text-gray-800 dark:text-gray-100">
@@ -494,7 +448,7 @@ export default function TodosPage() {
                           type="checkbox"
                           checked={todo.completed}
                           onChange={() =>
-                            updateMutation.mutate({
+                            updateTodo({
                               id: todo._id,
                               completed: !todo.completed,
                             })
@@ -508,7 +462,7 @@ export default function TodosPage() {
                           <Pencil size={18} />
                         </button>
                         <button
-                          onClick={() => deleteMutation.mutate(todo._id)}
+                          onClick={() => deleteTodo(todo._id)}
                           className="text-red-500 hover:text-red-700"
                         >
                           <Trash size={18} />
