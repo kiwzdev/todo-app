@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route"; // ปรับ path ตามจริง
+import { authOptions } from "../auth/[...nextauth]/route";
 import { connectMongoDB } from "@/lib/mongodb";
 import User from "@/models/user";
 
@@ -9,9 +9,7 @@ async function getUserBySession() {
   if (!session?.user?.email) return null;
 
   await connectMongoDB();
-
-  const user = await User.findOne({ email: session.user.email });
-  return user;
+  return await User.findOne({ email: session.user.email });
 }
 
 export async function PUT(req: NextRequest) {
@@ -20,10 +18,10 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const formData = await req.formData();
-
-  const newUsername = formData.get("username")?.toString().trim();
-  const newEmail = formData.get("email")?.toString().trim();
+  const body = await req.json();
+  const newUsername = body.username?.trim();
+  const newEmail = body.email?.trim();
+  const newImage = body.image?.trim();
 
   if (!newUsername || !newEmail) {
     return NextResponse.json({ message: "Username and email are required" }, { status: 400 });
@@ -31,7 +29,7 @@ export async function PUT(req: NextRequest) {
 
   await connectMongoDB();
 
-  // เช็ค username ซ้ำ (ยกเว้นตัวเอง)
+  // ตรวจสอบ username ซ้ำ (ยกเว้นตัวเอง)
   const existedUsername = await User.findOne({
     username: newUsername,
     _id: { $ne: currentUser._id },
@@ -41,7 +39,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ message: "Username already taken" }, { status: 409 });
   }
 
-  // เช็ค email ซ้ำ (ยกเว้นตัวเอง)
+  // ตรวจสอบ email ซ้ำ (ยกเว้นตัวเอง)
   const existedEmail = await User.findOne({
     email: newEmail,
     _id: { $ne: currentUser._id },
@@ -54,21 +52,18 @@ export async function PUT(req: NextRequest) {
   try {
     currentUser.username = newUsername;
     currentUser.email = newEmail;
-
-    // update รูปโปรไฟล์ตรงนี้
+    currentUser.image = newImage;
 
     await currentUser.save();
 
-    return NextResponse.json(
-      {
-        message: "Profile updated successfully",
-        user: {
-          username: currentUser.username,
-          email: currentUser.email,
-        },
+    return NextResponse.json({
+      message: "Profile updated successfully",
+      user: {
+        username: currentUser.username,
+        email: currentUser.email,
+        image: currentUser.image,
       },
-      { status: 200 }
-    );
+    });
   } catch (err) {
     return NextResponse.json({ message: "Failed to update profile", error: String(err) }, { status: 500 });
   }

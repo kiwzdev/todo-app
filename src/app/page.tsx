@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 
 const images = [
   "/images/welcome.jpg",
-  "/images/slide2.jpg",
-  "/images/slide3.jpg",
+  "/images/welcome2.jpg",
+  "/images/welcome3.jpg",
 ];
 const texts = ["Welcome", "Let's Begin", "Enjoy the Journey"];
 

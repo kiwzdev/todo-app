@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
 
       async authorize(credentials) {
         if (!credentials) throw new Error("Missing credentials");
-        
+
         const email = credentials?.email;
         const password = credentials?.password;
 
@@ -38,6 +38,7 @@ export const authOptions: NextAuthOptions = {
           id: user._id.toString(),
           email: user.email,
           username: user.username,
+          image: user.image,
         };
       },
     }),
@@ -47,11 +48,30 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: AuthUser }) {
+    async jwt({
+      token,
+      user,
+      trigger,
+      session,
+    }: {
+      token: JWT;
+      user?: AuthUser;
+    }) {
+      // เมื่อ user login ครั้งแรก
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.username = user.username;
+        token.image = user.image;
+      }
+      // เมื่อมีการ update session
+      if (trigger === "update" && session) {
+        // อัพเดทข้อมูลใน token จากข้อมูลที่ส่งมาใน session
+        if (session.user) {
+          token.username = session.user.username ?? token.username;
+          token.email = session.user.email ?? token.email;
+          token.image = session.user.image ?? token.image;
+        }
       }
       return token;
     },
@@ -60,6 +80,7 @@ export const authOptions: NextAuthOptions = {
         id: token.id as string,
         email: token.email,
         username: token.username,
+        image: token.image,
       };
       return session;
     },

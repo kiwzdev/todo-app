@@ -34,7 +34,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await User.create({ username, email, password: hashedPassword });
+    await User.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
 
     return NextResponse.json({ message: "User created" }, { status: 201 });
   } catch (err) {

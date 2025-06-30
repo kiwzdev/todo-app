@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   })
 
-  console.log("user ", user)
+  // console.log("user ", user)
 
   // Get the pathname of the request
   const { pathname } = request.nextUrl

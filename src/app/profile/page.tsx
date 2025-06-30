@@ -5,18 +5,21 @@ import { DEFAULT_PROFILE } from "@/utils/constant";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import Loading from "@/components/Loading";
+import { getCloudinaryUrl } from "@/helpers/getCloudinaryUrl";
 
-const updateProfile = async (formData: FormData) => {
-  const response = await axios.put("/api/profile", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+const updateProfile = async (payload: {
+  username: string;
+  email: string;
+  image: string;
+}) => {
+  const response = await axios.put("/api/profile", payload);
   return response.data;
 };
 
@@ -28,13 +31,18 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    image: null as File | null,
+    image: "",
   });
-  const [tempData, setTempData] = useState(formData);
-  const [isEditing, setIsEditing] = useState(false);
+  const [tempData, setTempData] = useState({
+    username: "",
+    email: "",
+    image: "", // URL String
+  });
 
-  // ref เก็บ URL object เพื่อเคลียร์ memory
-  const imageURLRef = useRef<string | null>(null);
+  const isChanged =
+    formData.username !== tempData.username ||
+    formData.email !== tempData.email ||
+    formData.image !== tempData.image;
 
   // ตั้งค่า formData และ tempData เมื่อ session โหลดเสร็จ
   useEffect(() => {
@@ -43,49 +51,30 @@ export default function ProfilePage() {
     setFormData({
       username: session?.user.username ?? "",
       email: session?.user.email ?? "",
-      image: null,
+      image: session?.user.image ?? "",
     });
     setTempData({
       username: session?.user.username ?? "",
       email: session?.user.email ?? "",
-      image: null,
+      image: session?.user.image ?? "",
     });
   }, [session, status, router]);
-
-  // ล้าง URL Object ก่อนสร้างใหม่ทุกครั้ง
-  useEffect(() => {
-    if (tempData.image) {
-      if (imageURLRef.current) {
-        URL.revokeObjectURL(imageURLRef.current);
-      }
-      imageURLRef.current = URL.createObjectURL(tempData.image);
-    }
-
-    return () => {
-      if (imageURLRef.current) {
-        URL.revokeObjectURL(imageURLRef.current);
-      }
-    };
-  }, [tempData.image]);
 
   const mutation = useMutation({
     mutationFn: updateProfile,
     onSuccess: async (data: {
-      user: { username: string; email: string; image?: string };
+      user: { username: string; email: string; image: string };
     }) => {
       toast.success("Profile updated!");
       console.log(data);
-      setFormData(tempData);
-      setIsEditing(false);
+      setFormData(data.user);
 
       await update({
-        ...session,
         user: {
-          ...session?.user,
+          id: session?.user?.id || "",
           username: data.user.username,
           email: data.user.email,
-          // ถ้ามีรูปภาพใหม่ก็ใส่ตรงนี้ด้วย ****
-          image: data.user.image ?? session?.user?.image,
+          image: data.user.image || session?.user?.image || "",
         },
       });
     },
@@ -98,36 +87,71 @@ export default function ProfilePage() {
       }
     },
   });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isEditing) return;
-
+  const handleChangeProfileImage = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const { name, value, files } = e.target;
+
     if (name === "image" && files?.[0]) {
-      setTempData((prev) => ({ ...prev, image: files[0] }));
+      const file = files[0];
+
+      // ตรวจสอบประเภทและขนาดไฟล์
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please select a valid image file (JPEG, PNG, JPG)");
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        // แสดง loading state
+        toast.loading("Uploading image...", { id: "upload" });
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || "Upload failed");
+        }
+
+        const updatedData = { ...tempData, image: data.publicId };
+        setTempData(updatedData);
+
+        mutation.mutateAsync(updatedData);
+
+        // toast.success("Image uploaded successfully!", { id: "upload" });
+      } catch (err) {
+        console.error("Upload error:", err);
+        toast.error(
+          err instanceof Error ? err.message : "Failed to upload image",
+          { id: "upload" }
+        );
+      }
     } else {
+      // สำหรับ input อื่นๆ ที่ไม่ใช่ image
       setTempData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleEditClick = () => {
-    setTempData(formData);
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => {
-    setTempData(formData);
-    setIsEditing(false);
-  };
-
   const handleSubmit = async () => {
-    const data = new FormData();
-    data.append("username", tempData.username);
-    data.append("email", tempData.email);
-    if (tempData.image) {
-      data.append("image", tempData.image);
-    }
-    mutation.mutateAsync(data);
+    mutation.mutateAsync({
+      username: tempData.username,
+      email: tempData.email,
+      image: tempData.image,
+    });
   };
 
   if (status === "loading") return <Loading />;
@@ -142,7 +166,7 @@ export default function ProfilePage() {
               <Image
                 src={
                   tempData.image
-                    ? imageURLRef.current || DEFAULT_PROFILE
+                    ? getCloudinaryUrl(tempData.image)
                     : DEFAULT_PROFILE
                 }
                 width={100}
@@ -151,24 +175,22 @@ export default function ProfilePage() {
                 className="w-36 h-36 rounded-full object-cover border border-green-500 p-2"
                 unoptimized
               />
-              {isEditing && (
-                <>
-                  <input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                    onChange={handleChange}
-                    className="hidden"
-                    id="upload"
-                  />
-                  <label
-                    htmlFor="upload"
-                    className="cursor-pointer dark:bg-green-500 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:hover:bg-green-600 text-sm transition"
-                  >
-                    Upload New Image
-                  </label>
-                </>
-              )}
+              <>
+                <input
+                  type="file"
+                  name="image"
+                  accept="image/*"
+                  onChange={handleChangeProfileImage}
+                  className="hidden"
+                  id="upload"
+                />
+                <label
+                  htmlFor="upload"
+                  className="cursor-pointer dark:bg-green-500 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:hover:bg-green-600 text-sm transition"
+                >
+                  Upload New Image
+                </label>
+              </>
             </div>
 
             <div className="mt-6 space-y-4">
@@ -178,12 +200,12 @@ export default function ProfilePage() {
                 </label>
                 <input
                   name="username"
-                  value={isEditing ? tempData.username : formData.username}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                  className={`w-full px-4 py-2 rounded shadow text-black dark:text-white bg-white dark:bg-gray-800 border dark:border-gray-700 ${
-                    isEditing ? "border-green-500" : "border-transparent"
-                  } transition-colors`}
+                  value={tempData.username}
+                  onChange={(e) => {
+                    setTempData({ ...tempData, username: e.target.value });
+                  }}
+                  className={`w-full px-4 py-2 rounded shadow text-black dark:text-white bg-white dark:bg-gray-800 border dark:border-gray-700 
+                  border-transparent transition-colors`}
                   placeholder="Enter your username"
                 />
               </div>
@@ -193,13 +215,12 @@ export default function ProfilePage() {
                 </label>
                 <input
                   name="email"
-                  value={isEditing ? tempData.email : formData.email}
-                  onChange={handleChange}
+                  value={tempData.email}
+                  onChange={(e) => {
+                    setTempData({ ...tempData, username: e.target.value });
+                  }}
                   type="email"
-                  readOnly={!isEditing}
-                  className={`w-full px-4 py-2 rounded shadow text-black dark:text-white bg-white dark:bg-gray-800 border dark:border-gray-700 ${
-                    isEditing ? "border-green-500" : "border-transparent"
-                  } transition-colors`}
+                  className={`w-full px-4 py-2 rounded shadow text-black dark:text-white bg-white dark:bg-gray-800 border dark:border-gray-700 border-transparent transition-colors`}
                   placeholder="Enter your email"
                 />
               </div>
@@ -215,33 +236,14 @@ export default function ProfilePage() {
               </Link>
             </div>
 
-            <div className="mt-6 flex justify-end space-x-4">
-              {!isEditing ? (
-                <button
-                  onClick={handleEditClick}
-                  disabled={mutation.isPending}
-                  className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500 dark:bg-gray-500 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Edit Profile
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={handleCancel}
-                    disabled={mutation.isPending}
-                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={mutation.isPending}
-                    className="dark:bg-green-500 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Save
-                  </button>
-                </>
-              )}
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleSubmit}
+                disabled={!isChanged || mutation.isPending}
+                className="dark:bg-green-500 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:hover:bg-green-600 transition disabled:opacity-50 "
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>
