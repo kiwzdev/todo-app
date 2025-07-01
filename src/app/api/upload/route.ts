@@ -2,7 +2,6 @@
 import { NextResponse } from "next/server";
 import cloudinary from "@/lib/cloudinary";
 
-// ดึง public_id จาก URL
 function extractPublicIdFromUrl(url: string): string | null {
   try {
     const parts = new URL(url).pathname.split("/");
@@ -20,44 +19,40 @@ function extractPublicIdFromUrl(url: string): string | null {
 export async function POST(req: Request) {
   const formData = await req.formData();
   const file = formData.get("file") as File;
-  const oldImageUrl = formData.get("oldImageUrl") as string; // เพิ่มสำหรับลบรูปเก่า
+  const oldPublicId = formData.get("oldPublicId") as string; // เพิ่มสำหรับลบรูปเก่า
 
   if (!file)
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
   try {
-    // ลบรูปเก่าก่อน (ถ้ามี)
-    if (oldImageUrl) {
-      const oldPublicId = extractPublicIdFromUrl(oldImageUrl);
-      if (oldPublicId) {
-        try {
-          await cloudinary.uploader.destroy(oldPublicId);
-          console.log("Old image deleted:", oldPublicId);
-        } catch (deleteErr) {
-          console.error("Failed to delete old image:", deleteErr);
-          // ไม่ throw error เพราะไม่ควรหยุดการอัพโหลดใหม่
-        }
-      }
-    }
-
     const arrayBuffer = await file.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString("base64");
     const dataURI = `data:${file.type};base64,${base64}`;
 
     const uploadRes = await cloudinary.uploader.upload(dataURI, {
-      folder: "todo-app", // เปลี่ยนชื่อโฟลเดอร์ได้
-      // เพิ่ม options อื่นๆ ตามต้องการ
+      folder: "todo-app",
       transformation: [
-        { width: 500, height: 500, crop: "limit" }, // จำกัดขนาดสูงสุด
-        { quality: "auto:good" }, // ปรับคุณภาพอัตโนมัติ
-        { format: "auto" }, // เลือกรูปแบบไฟล์อัตโนมัติ
+        { width: 500, height: 500, crop: "limit" },
+        { quality: "auto:good" },
+        { format: "auto" },
       ],
     });
+
+    // อัปโหลดใหม่สำเร็จ -> ค่อยลบของเก่า
+    if (oldPublicId) {
+      cloudinary.uploader
+        .destroy(oldPublicId)
+        .then(() => {
+          console.log("Old image deleted:", oldPublicId);
+        })
+        .catch((err) => {
+          console.error("Failed to delete old image:", err);
+        });
+    }
 
     return NextResponse.json({
       url: uploadRes.secure_url,
       publicId: uploadRes.public_id,
-      // ส่งข้อมูลเพิ่มเติมที่อาจมีประโยชน์
       width: uploadRes.width,
       height: uploadRes.height,
       format: uploadRes.format,

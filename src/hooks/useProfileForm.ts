@@ -28,9 +28,13 @@ const updateProfileAPI = async (
   return data;
 };
 
-const uploadImageAPI = async (file: File): Promise<{ publicId: string }> => {
+const uploadImageAPI = async (
+  file: File,
+  oldPublicId?: string
+): Promise<{ publicId: string }> => {
   const formData = new FormData();
   formData.append("file", file);
+  if (oldPublicId) formData.append("oldPublicId", oldPublicId);
   const { data } = await axios.post("/api/upload", formData);
   return data;
 };
@@ -60,7 +64,8 @@ export const useProfileForm = () => {
 
   // --- Mutations ---
   const uploadMutation = useMutation({
-    mutationFn: uploadImageAPI,
+    mutationFn: ({ file, oldPublicId }: { file: File; oldPublicId?: string }) =>
+      uploadImageAPI(file, oldPublicId),
     onSuccess: (data) => {
       setFormState((prev) => ({ ...prev, image: data.publicId }));
       toast.success("Image uploaded successfully!", { id: "upload" });
@@ -121,7 +126,7 @@ export const useProfileForm = () => {
       return;
     }
 
-    uploadMutation.mutate(file);
+    uploadMutation.mutate({ file, oldPublicId: session?.user.image });
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -145,6 +150,6 @@ export const useProfileForm = () => {
     handleInputChange,
     handleFileChange,
     handleSaveProfile,
-    updateProfileMutation
+    updateProfileMutation,
   };
 };
