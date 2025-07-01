@@ -15,136 +15,28 @@ import { NewTodo, useTodos } from "@/hooks/useTodos";
 import TagsInput from "@/components/Todo/Tag/TagsInput";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
-type Todo = {
-  _id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  dueDate?: string;
-  tags?: string[];
-  priority: "low" | "medium" | "high";
-};
-
 export default function TodosPage() {
   // ใช้ Custom Hook เพื่อจัดการ Logic ทั้งหมด
   const {
-    // todos,
     filteredTodos,
-    // isLoading,
-    // isError,
-    // filters,
-    // setFilters,
-    addTodo,
-    updateTodo,
+    filters,
+    setFilters,
+    handleAdd,
+    handleUpdate,
     isAdding,
     isUpdating,
+    isModalOpen,
+    startEdit,
+    closeModal,
+    formErrors,
+    editingFormErrors,
+    toggleCompleted,
     deleteTodo,
+    newTodoData,
+    setNewTodoData,
+    formData,
+    setFormData,
   } = useTodos();
-
-  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [newTodoData, setNewTodoData] = useState<NewTodo>({
-    title: "",
-    description: "",
-    dueDate: "",
-    tags: [] as string[],
-    priority: "medium",
-  });
-
-  const [formData, setFormData] = useState<NewTodo>({
-    title: "",
-    description: "",
-    dueDate: "",
-    tags: [],
-    priority: "medium",
-  });
-
-  // Form Errors
-  const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
-  const [editingFormErrors, setEditingFormErrors] = useState<
-    Record<string, string[]>
-  >({});
-
-  const handleAdd = () => {
-    const validation = todoSchema.safeParse(newTodoData);
-    if (!validation.success) {
-      const { fieldErrors } = validation.error.flatten();
-      setFormErrors(fieldErrors);
-      return;
-    }
-
-    const parsed = validation.data;
-    const payload = {
-      ...parsed,
-      dueDate: parsed.dueDate || undefined,
-    };
-
-    addTodo(payload, {
-      onSuccess: () =>
-        setNewTodoData({
-          title: "",
-          description: "",
-          dueDate: "",
-          tags: [],
-          priority: "medium",
-        }),
-    });
-  };
-
-  const handleUpdate = () => {
-    if (!editingTodo) return;
-
-    const validation = todoUpdateSchema.safeParse({
-      ...formData,
-      id: editingTodo._id,
-    });
-
-    if (!validation.success) {
-      const { fieldErrors } = validation.error.flatten();
-      setEditingFormErrors(fieldErrors);
-      return;
-    }
-
-    const parsed = validation.data;
-    const payload = {
-      ...parsed,
-      tags: parsed.tags,
-      dueDate: parsed.dueDate || undefined,
-    };
-
-    updateTodo(payload);
-    closeModal();
-  };
-
-  const startEdit = (todo: Todo) => {
-    setEditingTodo(todo);
-    setFormData({
-      title: todo.title,
-      description: todo.description || "",
-      dueDate: todo.dueDate || "",
-      tags: todo.tags || [],
-      priority: todo.priority,
-    });
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingTodo(null);
-    setFormData({
-      title: "",
-      description: "",
-      dueDate: "",
-      tags: [],
-      priority: "medium",
-    });
-  };
-
-  // Search
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPriority, setSelectedPriority] = useState(""); // "", "high", "medium", "low"
-  const [selectedCompleted, setSelectedCompleted] = useState(""); // "", "completed", "incompleted"
 
   // Authentication
   const status = useAuthRedirect();
@@ -360,13 +252,20 @@ export default function TodosPage() {
                   <input
                     type="text"
                     placeholder="Search todos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={filters.searchTerm}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        searchTerm: e.target.value,
+                      }))
+                    }
                     className="w-full p-2 border rounded-md pr-10" // pr-10 = เว้นที่ให้ปุ่มอยู่ใน input
                   />
-                  {searchTerm && (
+                  {filters.searchTerm && (
                     <button
-                      onClick={() => setSearchTerm("")}
+                      onClick={() =>
+                        setFilters((prev) => ({ ...prev, searchTerm: "" }))
+                      }
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
                       ✕
@@ -375,8 +274,13 @@ export default function TodosPage() {
                 </div>
 
                 <select
-                  value={selectedPriority}
-                  onChange={(e) => setSelectedPriority(e.target.value)}
+                  value={filters.priority}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      priority: e.target.value as "high" | "medium" | "low",
+                    }))
+                  }
                   className="w-full sm:w-1/4 p-2 border rounded-md dark:bg-gray-950"
                 >
                   <option className="dark:text-gray-100" value="">
@@ -393,8 +297,13 @@ export default function TodosPage() {
                   </option>
                 </select>
                 <select
-                  value={selectedCompleted}
-                  onChange={(e) => setSelectedCompleted(e.target.value)}
+                  value={filters.status}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      status: e.target.value as "completed" | "incompleted",
+                    }))
+                  }
                   className="w-full sm:w-1/4 p-2 border rounded-md dark:bg-gray-950"
                 >
                   <option className="dark:text-gray-100" value="">
@@ -439,12 +348,7 @@ export default function TodosPage() {
                         <input
                           type="checkbox"
                           checked={todo.completed}
-                          onChange={() =>
-                            updateTodo({
-                              id: todo._id,
-                              completed: !todo.completed,
-                            })
-                          }
+                          onChange={() => toggleCompleted(todo)}
                           className="w-5 h-5 accent-green-500 rounded cursor-pointer"
                         />
                         <button
