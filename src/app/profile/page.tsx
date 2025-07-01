@@ -1,20 +1,20 @@
 "use client";
 
+// --- Components ---
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Loading from "@/components/Loading";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+
+// --- Next.js ---
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
-import { useProfileForm } from "@/hooks/useProfileForm"; // Import custom hook
+
+// --- Custom Hooks ---
+import { useProfileForm } from "@/hooks/useProfileForm";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function ProfilePage() {
-  const router = useRouter();
-
-  // ใช้ Custom Hook เพื่อจัดการ Logic ทั้งหมด
+  // --- Custom Hook สำหรับจัดการ logic form/profile ---
   const {
     formState,
     imageUrl,
@@ -25,6 +25,7 @@ export default function ProfilePage() {
     handleSaveProfile,
     updateProfileMutation,
   } = useProfileForm();
+
   // Authentication
   const status = useAuthRedirect();
   if (status === "loading") return <Loading />;

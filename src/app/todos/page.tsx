@@ -1,22 +1,23 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Loading from "@/components/Loading";
-import { Circle, Pencil, Trash } from "lucide-react";
-import clsx from "clsx";
-import Navbar from "@/components/Navbar";
-import { motion } from "framer-motion";
 
+// --- Third-party imports ---
+import clsx from "clsx";
+import { motion } from "framer-motion";
 import { Dialog } from "@headlessui/react";
+import { Circle, Pencil, Trash } from "lucide-react";
+
+// --- Local components ---
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { todoSchema, todoUpdateSchema } from "@/lib/validations/todoSchema";
-import { NewTodo, useTodos } from "@/hooks/useTodos";
+import Loading from "@/components/Loading";
 import TagsInput from "@/components/Todo/Tag/TagsInput";
+
+// --- Custom hooks ---
+import { useTodos } from "@/hooks/useTodos";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function TodosPage() {
-  // ใช้ Custom Hook เพื่อจัดการ Logic ทั้งหมด
+  // --- Custom Hook เพื่อจัดการ Logic ทั้งหมด ---
   const {
     filteredTodos,
     filters,
