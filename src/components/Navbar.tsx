@@ -3,14 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Session } from "next-auth";
 import { ThemeToggle } from "@/app/theme-toggle";
 
-type NavbarProps = {
-  session: Session | null;
-}
-export default function Navbar({ session }: NavbarProps) {
+export default function Navbar() {
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -26,7 +24,7 @@ export default function Navbar({ session }: NavbarProps) {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-4">
-          <ThemeToggle/>
+          <ThemeToggle />
           {session && (
             <Link
               href="/profile"

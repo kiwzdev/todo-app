@@ -13,6 +13,7 @@ import Footer from "@/components/Footer";
 import { todoSchema, todoUpdateSchema } from "@/lib/validations/todoSchema";
 import { NewTodo, useTodos } from "@/hooks/useTodos";
 import TagsInput from "@/components/Todo/Tag/TagsInput";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 type Todo = {
   _id: string;
@@ -25,15 +26,6 @@ type Todo = {
 };
 
 export default function TodosPage() {
-  // Authentication
-  const { data: session, status } = useSession();
-
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status == "unauthenticated") router.push("/sign-in");
-  }, [session, status, router]);
-
   // ใช้ Custom Hook เพื่อจัดการ Logic ทั้งหมด
   const {
     // todos,
@@ -154,11 +146,13 @@ export default function TodosPage() {
   const [selectedPriority, setSelectedPriority] = useState(""); // "", "high", "medium", "low"
   const [selectedCompleted, setSelectedCompleted] = useState(""); // "", "completed", "incompleted"
 
+  // Authentication
+  const status = useAuthRedirect();
   if (status === "loading") return <Loading />;
   if (status === "authenticated")
     return (
       <>
-        <Navbar session={session} />
+        <Navbar />
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -227,7 +221,13 @@ export default function TodosPage() {
                       <select
                         value={formData.priority}
                         onChange={(e) =>
-                          setFormData({ ...formData, priority: e.target.value as 'low' | 'medium' | 'high'  })
+                          setFormData({
+                            ...formData,
+                            priority: e.target.value as
+                              | "low"
+                              | "medium"
+                              | "high",
+                          })
                         }
                         className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       >
@@ -323,7 +323,7 @@ export default function TodosPage() {
                     onChange={(e) =>
                       setNewTodoData({
                         ...newTodoData,
-                        priority: e.target.value as 'low' | 'medium' | 'high' ,
+                        priority: e.target.value as "low" | "medium" | "high",
                       })
                     }
                     className="w-40 px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"

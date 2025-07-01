@@ -5,15 +5,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Loading from "@/components/Loading";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function SignInPage() {
-  const { data: session, status } = useSession();
-
   const router = useRouter();
-
-  useEffect(() => {
-    if (status == "authenticated") router.push("/todos");
-  }, [session, status, router]);
 
   const [formData, setFormData] = useState({ email: "", password: "" });
 
@@ -44,8 +39,10 @@ export default function SignInPage() {
     }
   };
 
-  if(status === "loading")return <Loading />;
-  if(status === "unauthenticated") return (
+  // Authentication
+  const status = useAuthRedirect();
+  if (status === "loading") return <Loading />;
+  return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">

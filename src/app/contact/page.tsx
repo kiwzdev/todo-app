@@ -13,16 +13,10 @@ import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Loading from "@/components/Loading";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function ContactPage() {
   // Authentication
-  const { data: session, status } = useSession();
-
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status == "unauthenticated") router.push("/sign-in");
-  }, [session, status, router]);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
@@ -33,11 +27,13 @@ export default function ContactPage() {
     setMessage("");
   };
 
+  // Authentication
+  const status = useAuthRedirect();
   if (status === "loading") return <Loading />;
   if (status === "authenticated")
     return (
       <>
-        <Navbar session={session} />
+        <Navbar />
         <div className="px-6 py-10 max-w-3xl mx-auto text-gray-800 dark:text-gray-100">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}

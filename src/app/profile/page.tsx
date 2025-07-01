@@ -9,9 +9,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useProfileForm } from "@/hooks/useProfileForm"; // Import custom hook
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession();
   const router = useRouter();
 
   // ใช้ Custom Hook เพื่อจัดการ Logic ทั้งหมด
@@ -25,20 +25,13 @@ export default function ProfilePage() {
     handleSaveProfile,
     updateProfileMutation,
   } = useProfileForm();
-
-  // Redirect ถ้ายังไม่ได้ login
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/sign-in");
-    }
-  }, [status, router]);
-
+  // Authentication
+  const status = useAuthRedirect();
   if (status === "loading") return <Loading />;
-  
   if (status === "authenticated")
     return (
       <>
-        <Navbar session={session} />
+        <Navbar />
 
         <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 p-4">
           <form
@@ -66,7 +59,9 @@ export default function ProfilePage() {
                 />
                 <label
                   htmlFor="upload"
-                  className={`cursor-pointer dark:bg-green-500 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:hover:bg-green-600 text-sm transition ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`cursor-pointer dark:bg-green-500 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:hover:bg-green-600 text-sm transition ${
+                    isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 >
                   {isSubmitting ? "Uploading..." : "Upload New Image"}
                 </label>
@@ -75,7 +70,10 @@ export default function ProfilePage() {
 
             <div className="mt-6 space-y-4">
               <div>
-                <label className="block font-semibold text-black dark:text-gray-200 mb-1" htmlFor="username">
+                <label
+                  className="block font-semibold text-black dark:text-gray-200 mb-1"
+                  htmlFor="username"
+                >
                   Username
                 </label>
                 <input
@@ -89,7 +87,10 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="block font-semibold text-black dark:text-gray-200 mb-1" htmlFor="email">
+                <label
+                  className="block font-semibold text-black dark:text-gray-200 mb-1"
+                  htmlFor="email"
+                >
                   Email
                 </label>
                 <input
