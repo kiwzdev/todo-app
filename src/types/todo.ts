@@ -1,5 +1,7 @@
 // types/todo.ts
 
+export const PRIORITIES = ["low", "medium", "high"] as const;
+
 export type Todo = {
   _id: string;
   title: string;
@@ -7,7 +9,7 @@ export type Todo = {
   completed: boolean;
   dueDate?: string;
   tags: string[];
-  priority: "low" | "medium" | "high";
+  priority: (typeof PRIORITIES)[number]; // tuple ["low", "medium", "high"]
 };
 
 export type NewTodo = Omit<Todo, "_id" | "completed">;

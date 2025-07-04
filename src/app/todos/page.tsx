@@ -35,8 +35,8 @@ export default function TodosPage() {
     deleteTodo,
     newTodoData,
     setNewTodoData,
-    formData,
-    setFormData,
+    editTodoData,
+    setEditTodoData,
   } = useTodos();
 
   // Authentication
@@ -53,7 +53,106 @@ export default function TodosPage() {
         >
           <div className="min-h-screen px-4 py-8 bg-gray-50 dark:bg-gray-950">
             <div className="md:mx-25">
-              <div className="space-y-4">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault(); // ป้องกันหน้า refresh
+                  handleAdd();
+                }}
+              >
+                <div className="space-y-4">
+                  <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">
+                    Add New Todo
+                  </h2>
+                  <input
+                    placeholder="Title"
+                    value={newTodoData.title}
+                    onChange={(e) =>
+                      setNewTodoData({ ...newTodoData, title: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100
+             shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0
+            "
+                  />
+                  {formErrors.title && (
+                    <p className="text-red-500 text-sm">
+                      {formErrors.title[0]}
+                    </p>
+                  )}
+                  <textarea
+                    placeholder="Description"
+                    value={newTodoData.description}
+                    onChange={(e) =>
+                      setNewTodoData({
+                        ...newTodoData,
+                        description: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                  />
+                  {formErrors.description && (
+                    <p className="text-red-500 text-sm">
+                      {formErrors.description[0]}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={newTodoData.dueDate}
+                      onChange={(e) =>
+                        setNewTodoData({
+                          ...newTodoData,
+                          dueDate: e.target.value,
+                        })
+                      }
+                      className="flex-1 px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                    />
+                    {formErrors.dueDate && (
+                      <p className="text-red-500 text-sm">
+                        {formErrors.dueDate[0]}
+                      </p>
+                    )}
+                    <select
+                      value={newTodoData.priority}
+                      onChange={(e) =>
+                        setNewTodoData({
+                          ...newTodoData,
+                          priority: e.target.value as "low" | "medium" | "high",
+                        })
+                      }
+                      className="w-40 px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                    {formErrors.priority && (
+                      <p className="text-red-500 text-sm">
+                        {formErrors.priority[0]}
+                      </p>
+                    )}
+                  </div>
+                  <TagsInput
+                    editTodoData={newTodoData}
+                    setEditTodoData={setNewTodoData}
+                  />
+                  {formErrors.tags && (
+                    <p className="text-red-500 text-sm">{formErrors.tags[0]}</p>
+                  )}
+                  <button
+                    type="submit"
+                    className="w-full bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:text-black dark:hover:bg-green-500 text-white font-semibold py-2 rounded-lg "
+                  >
+                    {isAdding ? "Adding..." : "Add Todo"}
+                  </button>
+                </div>
+              </form>
+              {/* Editing Todo */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault(); // ป้องกันหน้า refresh
+                  handleUpdate();
+                }}
+              >
                 <Dialog
                   open={isModalOpen}
                   onClose={closeModal}
@@ -68,12 +167,14 @@ export default function TodosPage() {
                       <Dialog.Title className="text-xl font-bold text-gray-900 dark:text-gray-100">
                         Edit Todo
                       </Dialog.Title>
-
                       <input
                         placeholder="Title"
-                        value={formData.title}
+                        value={editTodoData.title}
                         onChange={(e) =>
-                          setFormData({ ...formData, title: e.target.value })
+                          setEditTodoData({
+                            ...editTodoData,
+                            title: e.target.value,
+                          })
                         }
                         className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
@@ -84,10 +185,10 @@ export default function TodosPage() {
                       )}
                       <textarea
                         placeholder="Description"
-                        value={formData.description}
+                        value={editTodoData.description}
                         onChange={(e) =>
-                          setFormData({
-                            ...formData,
+                          setEditTodoData({
+                            ...editTodoData,
                             description: e.target.value,
                           })
                         }
@@ -100,9 +201,12 @@ export default function TodosPage() {
                       )}
                       <input
                         type="date"
-                        value={formData.dueDate}
+                        value={editTodoData.dueDate}
                         onChange={(e) =>
-                          setFormData({ ...formData, dueDate: e.target.value })
+                          setEditTodoData({
+                            ...editTodoData,
+                            dueDate: e.target.value,
+                          })
                         }
                         className="w-full px-4 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
                       />
@@ -112,10 +216,10 @@ export default function TodosPage() {
                         </p>
                       )}
                       <select
-                        value={formData.priority}
+                        value={editTodoData.priority}
                         onChange={(e) =>
-                          setFormData({
-                            ...formData,
+                          setEditTodoData({
+                            ...editTodoData,
                             priority: e.target.value as
                               | "low"
                               | "medium"
@@ -134,8 +238,8 @@ export default function TodosPage() {
                         </p>
                       )}
                       <TagsInput
-                        formData={formData}
-                        setFormData={setFormData}
+                        editTodoData={editTodoData}
+                        setEditTodoData={setEditTodoData}
                       />
 
                       {editingFormErrors.tags && (
@@ -145,9 +249,7 @@ export default function TodosPage() {
                       )}
                       <div className="flex gap-2 pt-2">
                         <button
-                          onClick={() => {
-                            handleUpdate();
-                          }}
+                          type="submit"
                           className="flex-1 bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:hover:bg-green-500 text-white font-semibold py-2 rounded-lg dark:text-black"
                         >
                           {isUpdating ? "Saving..." : "Save"}
@@ -162,89 +264,7 @@ export default function TodosPage() {
                     </Dialog.Panel>
                   </div>
                 </Dialog>
-                <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">
-                  Add New Todo
-                </h2>
-                <input
-                  placeholder="Title"
-                  value={newTodoData.title}
-                  onChange={(e) =>
-                    setNewTodoData({ ...newTodoData, title: e.target.value })
-                  }
-                  className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100
-             shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0
-            "
-                />
-                {formErrors.title && (
-                  <p className="text-red-500 text-sm">{formErrors.title[0]}</p>
-                )}
-                <textarea
-                  placeholder="Description"
-                  value={newTodoData.description}
-                  onChange={(e) =>
-                    setNewTodoData({
-                      ...newTodoData,
-                      description: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
-                />
-                {formErrors.description && (
-                  <p className="text-red-500 text-sm">
-                    {formErrors.description[0]}
-                  </p>
-                )}
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    value={newTodoData.dueDate}
-                    onChange={(e) =>
-                      setNewTodoData({
-                        ...newTodoData,
-                        dueDate: e.target.value,
-                      })
-                    }
-                    className="flex-1 px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
-                  />
-                  {formErrors.dueDate && (
-                    <p className="text-red-500 text-sm">
-                      {formErrors.dueDate[0]}
-                    </p>
-                  )}
-                  <select
-                    value={newTodoData.priority}
-                    onChange={(e) =>
-                      setNewTodoData({
-                        ...newTodoData,
-                        priority: e.target.value as "low" | "medium" | "high",
-                      })
-                    }
-                    className="w-40 px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
-                  {formErrors.priority && (
-                    <p className="text-red-500 text-sm">
-                      {formErrors.priority[0]}
-                    </p>
-                  )}
-                </div>
-                <TagsInput
-                  formData={newTodoData}
-                  setFormData={setNewTodoData}
-                />
-                {formErrors.tags && (
-                  <p className="text-red-500 text-sm">{formErrors.tags[0]}</p>
-                )}
-                <button
-                  onClick={handleAdd}
-                  className="w-full bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:text-black dark:hover:bg-green-500 text-white font-semibold py-2 rounded-lg "
-                >
-                  {isAdding ? "Adding..." : "Add Todo"}
-                </button>
-              </div>
+              </form>
               <h2 className="text-3xl mt-4 font-semibold text-gray-800 dark:text-gray-100">
                 My Todos
               </h2>

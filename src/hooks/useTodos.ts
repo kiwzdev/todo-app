@@ -27,7 +27,7 @@ export const useTodos = () => {
     priority: "medium",
   });
 
-  const [formData, setFormData] = useState<NewTodo>({
+  const [editTodoData, setEditTodoData] = useState<NewTodo>({
     title: "",
     description: "",
     dueDate: "",
@@ -99,7 +99,7 @@ export const useTodos = () => {
   // --- UI Logic ---
   const startEdit = (todo: Todo) => {
     setEditingTodo(todo);
-    setFormData({
+    setEditTodoData({
       title: todo.title,
       description: todo.description || "",
       dueDate: todo.dueDate || "",
@@ -112,7 +112,7 @@ export const useTodos = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTodo(null);
-    setFormData({
+    setEditTodoData({
       title: "",
       description: "",
       dueDate: "",
@@ -152,7 +152,7 @@ export const useTodos = () => {
     if (!editingTodo) return;
 
     const validation = todoUpdateSchema.safeParse({
-      ...formData,
+      ...editTodoData,
       id: editingTodo._id,
     });
 
@@ -226,7 +226,7 @@ export const useTodos = () => {
 
     newTodoData,
     setNewTodoData,
-    formData,
-    setFormData,
+    editTodoData,
+    setEditTodoData,
   };
 };

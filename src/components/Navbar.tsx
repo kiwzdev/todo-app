@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { Session } from "next-auth";
 import { ThemeToggle } from "@/app/theme-toggle";
 
 export default function Navbar() {

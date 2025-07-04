@@ -12,7 +12,6 @@ import Link from "next/link";
 // --- Custom Hooks ---
 import { useProfileForm } from "@/hooks/useProfileForm";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
-import { DEFAULT_PROFILE } from "@/utils/constant";
 
 export default function ProfilePage() {
   // --- Custom Hook สำหรับจัดการ logic form/profile ---

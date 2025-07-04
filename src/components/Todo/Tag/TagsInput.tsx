@@ -1,12 +1,12 @@
-import { NewTodo } from "@/hooks/useTodos";
+import { NewTodo } from "@/types/todo";
 import { useState } from "react";
 
 export default function TagsInput({
-  formData,
-  setFormData,
+  editTodoData,
+  setEditTodoData,
 }: {
-  formData: NewTodo;
-  setFormData: (data: NewTodo) => void;
+  editTodoData: NewTodo;
+  setEditTodoData: (data: NewTodo) => void;
 }) {
   const [input, setInput] = useState("");
 
@@ -14,10 +14,10 @@ export default function TagsInput({
     if (e.key === "Enter" && input.trim() !== "") {
       e.preventDefault();
       const newTag = input.trim();
-      if (!formData.tags.includes(newTag)) {
-        setFormData({
-          ...formData,
-          tags: [...formData.tags, newTag],
+      if (!editTodoData.tags.includes(newTag)) {
+        setEditTodoData({
+          ...editTodoData,
+          tags: [...editTodoData.tags, newTag],
         });
       }
       setInput("");
@@ -25,16 +25,16 @@ export default function TagsInput({
   };
 
   const removeTag = (tagToRemove: string) => {
-    setFormData({
-      ...formData,
-      tags: formData.tags.filter((tag: string) => tag !== tagToRemove),
+    setEditTodoData({
+      ...editTodoData,
+      tags: editTodoData.tags.filter((tag: string) => tag !== tagToRemove),
     });
   };
 
   return (
     <div className="w-full">
       <div className="flex flex-wrap items-center gap-2 px-2 py-2 border rounded-lg dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm hover:shadow-md focus-within:shadow-md transition-shadow duration-300 ease-in-out">
-        {formData.tags.map((tag: string, index: number) => (
+        {editTodoData.tags.map((tag: string, index: number) => (
           <div
             key={index}
             className="flex items-center bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 px-2 py-1 rounded-full text-sm"
