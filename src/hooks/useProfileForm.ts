@@ -11,7 +11,7 @@ import { DEFAULT_PROFILE } from "@/utils/constant";
 interface ProfileFormState {
   username: string;
   email: string;
-  image: string; // publicId จาก Cloudinary
+  image: string;
 }
 
 interface UserProfile {
@@ -138,9 +138,10 @@ export const useProfileForm = () => {
   const isChanged = JSON.stringify(formState) !== JSON.stringify(initialData);
   const isSubmitting =
     updateProfileMutation.isPending || uploadMutation.isPending;
-  const imageUrl = formState.image
-    ? getCloudinaryUrl(formState.image)
-    : DEFAULT_PROFILE;
+  const imageUrl =
+    formState.image == "null"
+      ? DEFAULT_PROFILE
+      : getCloudinaryUrl(formState.image);
 
   return {
     formState,

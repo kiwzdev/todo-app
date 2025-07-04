@@ -12,6 +12,7 @@ import Link from "next/link";
 // --- Custom Hooks ---
 import { useProfileForm } from "@/hooks/useProfileForm";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { DEFAULT_PROFILE } from "@/utils/constant";
 
 export default function ProfilePage() {
   // --- Custom Hook สำหรับจัดการ logic form/profile ---
@@ -25,7 +26,6 @@ export default function ProfilePage() {
     handleSaveProfile,
     updateProfileMutation,
   } = useProfileForm();
-
   // Authentication
   const status = useAuthRedirect();
   if (status === "loading") return <Loading />;

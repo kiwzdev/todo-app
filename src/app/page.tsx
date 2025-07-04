@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const images = [
-  "/images/welcome.jpg",
-  "/images/welcome2.jpg",
-  "/images/welcome3.jpg",
+  "/images/welcome1.webp",
+  "/images/welcome4.jpg",
+  "/images/welcome3.webp",
 ];
 const texts = ["Welcome", "Let's Begin", "Enjoy the Journey"];
 
@@ -58,15 +58,15 @@ export default function Home() {
       />
 
       {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-50 z-10" />
+      <div className="absolute inset-0 bg-opacity-50 z-10" />
 
       {/* Centered Text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4 z-20">
-        <h1 className="text-5xl md:text-6xl font-bold mb-4 font-mono">
+        <h1 className="text-5xl md:text-6xl font-bold mb-4 font-mono text-black">
           {typedText}
           <span className="animate-pulse">|</span>
         </h1>
-        <p className="text-lg md:text-xl font-light mb-20">
+        <p className="text-lg md:text-xl font-light mb-20 text-black">
           Discover amazing experiences with us.
         </p>
       </div>
