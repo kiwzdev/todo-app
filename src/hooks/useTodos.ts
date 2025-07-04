@@ -1,6 +1,6 @@
 // hooks/useTodos.ts
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
@@ -14,32 +14,29 @@ import {
 } from "@/services/todoService";
 import { NewTodo, Todo, TodoFilterState } from "@/types/todo";
 
+// --- Constants ---
+const INITIAL_TODO_DATA: NewTodo = {
+  title: "",
+  description: "",
+  dueDate: "",
+  tags: [],
+  priority: "medium",
+};
+
+const INITIAL_FILTERS: TodoFilterState = {
+  searchTerm: "",
+  priority: "",
+  status: "",
+};
+
 // --- Custom Hook ---
 export const useTodos = () => {
   const queryClient = useQueryClient();
 
-  // --- State ---
-  const [newTodoData, setNewTodoData] = useState<NewTodo>({
-    title: "",
-    description: "",
-    dueDate: "",
-    tags: [],
-    priority: "medium",
-  });
-
-  const [editTodoData, setEditTodoData] = useState<NewTodo>({
-    title: "",
-    description: "",
-    dueDate: "",
-    tags: [],
-    priority: "medium",
-  });
-
-  const [filters, setFilters] = useState<TodoFilterState>({
-    searchTerm: "",
-    priority: "",
-    status: "",
-  });
+  // --- State Management ---
+  const [newTodoData, setNewTodoData] = useState<NewTodo>(INITIAL_TODO_DATA);
+  const [editTodoData, setEditTodoData] = useState<NewTodo>(INITIAL_TODO_DATA);
+  const [filters, setFilters] = useState<TodoFilterState>(INITIAL_FILTERS);
 
   const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
   const [editingFormErrors, setEditingFormErrors] = useState<
@@ -66,10 +63,13 @@ export const useTodos = () => {
       toast.success("Todo added successfully!");
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof AxiosError ? error.message : "Failed to add todo."
-      ),
+    onError: (error) => {
+      const message =
+        error instanceof AxiosError
+          ? error.response?.data?.message || error.message
+          : "Failed to add todo.";
+      toast.error(message);
+    },
   });
 
   const updateMutation = useMutation({
@@ -78,10 +78,13 @@ export const useTodos = () => {
       toast.success("Todo updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof AxiosError ? error.message : "Failed to update todo."
-      ),
+    onError: (error) => {
+      const message =
+        error instanceof AxiosError
+          ? error.response?.data?.message || error.message
+          : "Failed to update todo.";
+      toast.error(message);
+    },
   });
 
   const deleteMutation = useMutation({
@@ -90,14 +93,29 @@ export const useTodos = () => {
       toast.success("Todo deleted successfully!");
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
-    onError: (error) =>
-      toast.error(
-        error instanceof AxiosError ? error.message : "Failed to delete todo."
-      ),
+    onError: (error) => {
+      const message =
+        error instanceof AxiosError
+          ? error.response?.data?.message || error.message
+          : "Failed to delete todo.";
+      toast.error(message);
+    },
   });
 
-  // --- UI Logic ---
-  const startEdit = (todo: Todo) => {
+  // --- Utility Functions ---
+  const resetFormData = useCallback(() => {
+    setNewTodoData(INITIAL_TODO_DATA);
+    setFormErrors({});
+  }, []);
+
+  const resetEditingData = useCallback(() => {
+    setEditTodoData(INITIAL_TODO_DATA);
+    setEditingFormErrors({});
+    setEditingTodo(null);
+  }, []);
+
+  // --- Modal Management ---
+  const openEditModal = useCallback((todo: Todo) => {
     setEditingTodo(todo);
     setEditTodoData({
       title: todo.title,
@@ -106,23 +124,17 @@ export const useTodos = () => {
       tags: todo.tags || [],
       priority: todo.priority,
     });
+    setEditingFormErrors({});
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeEditModal = useCallback(() => {
     setIsModalOpen(false);
-    setEditingTodo(null);
-    setEditTodoData({
-      title: "",
-      description: "",
-      dueDate: "",
-      tags: [],
-      priority: "medium",
-    });
-  };
+    resetEditingData();
+  }, [resetEditingData]);
 
-  // --- Handlers ---
-  const handleAdd = () => {
+  // --- Form Handlers ---
+  const handleAddTodo = useCallback(() => {
     const validation = todoSchema.safeParse(newTodoData);
 
     if (!validation.success) {
@@ -130,25 +142,17 @@ export const useTodos = () => {
       return;
     }
 
-    const parsed = validation.data;
     const payload = {
-      ...parsed,
-      dueDate: parsed.dueDate || undefined,
+      ...validation.data,
+      dueDate: validation.data.dueDate || undefined,
     };
 
     addMutation.mutate(payload, {
-      onSuccess: () =>
-        setNewTodoData({
-          title: "",
-          description: "",
-          dueDate: "",
-          tags: [],
-          priority: "medium",
-        }),
+      onSuccess: resetFormData,
     });
-  };
+  }, [newTodoData, addMutation, resetFormData]);
 
-  const handleUpdate = () => {
+  const handleUpdateTodo = useCallback(() => {
     if (!editingTodo) return;
 
     const validation = todoUpdateSchema.safeParse({
@@ -161,72 +165,127 @@ export const useTodos = () => {
       return;
     }
 
-    const parsed = validation.data;
     const payload = {
-      ...parsed,
-      tags: parsed.tags,
-      dueDate: parsed.dueDate || undefined,
+      ...validation.data,
+      dueDate: validation.data.dueDate || undefined,
     };
 
-    updateMutation.mutate(payload);
-    closeModal();
-  };
-
-  const toggleCompleted = (todo: Todo) => {
-    updateMutation.mutate({
-      id: todo._id,
-      completed: !todo.completed,
+    updateMutation.mutate(payload, {
+      onSuccess: closeEditModal,
     });
-  };
+  }, [editingTodo, editTodoData, updateMutation, closeEditModal]);
 
-  // --- Derived State ---
+  const handleToggleCompleted = useCallback(
+    (todo: Todo) => {
+      updateMutation.mutate({
+        id: todo._id,
+        completed: !todo.completed,
+      });
+    },
+    [updateMutation]
+  );
+
+  const handleDeleteTodo = useCallback(
+    (todoId: string) => {
+      deleteMutation.mutate(todoId);
+    },
+    [deleteMutation]
+  );
+
+  // --- Filter Logic ---
   const filteredTodos = useMemo(() => {
-    return todos.filter((todo) => {
-      const matchSearch = todo.title
-        .toLowerCase()
-        .includes(filters.searchTerm.toLowerCase());
+    if (!todos.length) return [];
 
-      const matchPriority =
+    return todos.filter((todo) => {
+      // Search filter
+      const matchesSearch =
+        !filters.searchTerm ||
+        todo.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        (todo.description &&
+          todo.description
+            .toLowerCase()
+            .includes(filters.searchTerm.toLowerCase()));
+
+      // Priority filter
+      const matchesPriority =
         !filters.priority || todo.priority === filters.priority;
 
-      const matchStatus =
+      // Status filter
+      const matchesStatus =
         !filters.status ||
         (filters.status === "completed" && todo.completed) ||
         (filters.status === "incompleted" && !todo.completed);
 
-      return matchSearch && matchPriority && matchStatus;
+      return matchesSearch && matchesPriority && matchesStatus;
     });
   }, [todos, filters]);
 
+  // --- Computed States ---
+  const todoStats = useMemo(() => {
+    const total = todos.length;
+    const completed = todos.filter((todo) => todo.completed).length;
+    const pending = total - completed;
+    const completionRate =
+      total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    return { total, completed, pending, completionRate };
+  }, [todos]);
+
+  const isAnyMutationPending = useMemo(
+    () =>
+      addMutation.isPending ||
+      updateMutation.isPending ||
+      deleteMutation.isPending,
+    [addMutation.isPending, updateMutation.isPending, deleteMutation.isPending]
+  );
+
   // --- Return API ---
   return {
+    // Data
     todos,
     filteredTodos,
+    todoStats,
+
+    // Loading states
     isLoading,
     isError,
+    isAnyMutationPending,
 
+    // Specific loading states
+    isAdding: addMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+
+    // Filters
     filters,
     setFilters,
 
-    handleAdd,
-    handleUpdate,
-    toggleCompleted,
-
-    startEdit,
-    closeModal,
-    isModalOpen,
-    setIsModalOpen,
-
-    formErrors,
-    editingFormErrors,
-
-    isAdding: addMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    deleteTodo: deleteMutation.mutate,
-
+    // Form data
     newTodoData,
     setNewTodoData,
     editTodoData,
     setEditTodoData,
+
+    // Form errors
+    formErrors,
+    editingFormErrors,
+
+    // Modal state
+    isModalOpen,
+    editingTodo,
+
+    // Actions
+    handleAddTodo,
+    handleUpdateTodo,
+    handleToggleCompleted,
+    handleDeleteTodo,
+
+    // Modal actions
+    openEditModal,
+    closeEditModal,
+
+    // Utility actions
+    resetFormData,
+    resetEditingData,
   };
 };
