@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true },
     password: { type: String, required: true },
     image: { type: String, required: true, default: "null" },
+    emailVerified: { type: Date, required: false },
     role: {
       type: String,
       enum: ["user", "admin"],
@@ -14,7 +15,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    strict: false
+    strict: false,
   }
 );
 

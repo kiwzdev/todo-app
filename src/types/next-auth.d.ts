@@ -7,16 +7,22 @@ declare module "next-auth" {
     user: {
       // เพิ่มฟิลด์ id และ username ให้กับ session.user
       id: string;
+      email: string;
       username: string;
       image?: string;
-    } & DefaultSession["user"];  // รวมกับฟิลด์ default ของ session.user เช่น email, name, image
+      role: string;
+      verifiedEmail: boolean;
+    } & DefaultSession["user"]; // รวมกับฟิลด์ default ของ session.user เช่น email, name, image
   }
 
   interface User extends DefaultUser {
     // เพิ่มฟิลด์ id และ username ให้กับ User type ที่ใช้ภายในระบบ NextAuth
     id: string;
+    email: string;
     username: string;
-    image?:string;
+    image?: string;
+    role: string;
+    verifiedEmail: boolean;
   }
 }
 
@@ -25,8 +31,11 @@ declare module "next-auth/jwt" {
   interface JWT {
     // เพิ่มฟิลด์ id และ username ใน JWT payload
     id: string;
+    email: string;
     username: string;
-    image?:string;
+    image?: string;
+    role: string;
+    verifiedEmail: boolean;
   }
 }
 // การ augment module แบบนี้ช่วยให้ TypeScript รู้จักฟิลด์พิเศษที่เราเพิ่มเอง (เช่น username และ id) ในระบบ NextAuth

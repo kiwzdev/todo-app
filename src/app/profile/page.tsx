@@ -105,7 +105,7 @@ export default function ProfilePage() {
                 />
               </div>
               <Link
-                href="/change-password" // ควรลิ้งค์ไปยังหน้าเปลี่ยนรหัสผ่านจริง
+                href="/forgot-password"
                 className="text-sm text-green-600 dark:text-green-400 hover:underline mt-1 inline-block transition"
               >
                 Change password
