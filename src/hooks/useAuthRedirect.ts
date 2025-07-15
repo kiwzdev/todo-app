@@ -12,7 +12,7 @@ export function useAuthRedirect({
 
   useEffect(() => {
     if (status === "loading") return;
-
+    
     if (
       status === "authenticated" &&
       (pathname === "/sign-in" || pathname === "/sign-up")

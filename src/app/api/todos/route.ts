@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route'; // ปรับ path ตามโครงสร้างโปรเจกต์
-import { connectMongoDB } from '@/lib/mongodb';
+import { connectMongoDB } from '@/lib/db/mongodb';
 import Todo from '@/models/todo';
 import User from '@/models/user';
 

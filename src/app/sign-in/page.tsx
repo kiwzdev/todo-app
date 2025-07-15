@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Loading from "@/components/Loading";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import Link from "next/link";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -82,6 +83,14 @@ export default function SignInPage() {
             />
           </div>
 
+          <div className="mt-2 text-right">
+            <Link
+              href="/forget-password"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
