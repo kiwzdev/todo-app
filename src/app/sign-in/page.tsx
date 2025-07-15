@@ -85,7 +85,7 @@ export default function SignInPage() {
 
           <div className="mt-2 text-right">
             <Link
-              href="/forget-password"
+              href="/forgot-password"
               className="text-sm text-blue-600 hover:underline"
             >
               Forgot password?

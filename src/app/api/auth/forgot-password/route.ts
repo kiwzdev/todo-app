@@ -1,11 +1,11 @@
-// app/api/auth/forgot-password/route.ts
+// app/api/auth/forgowt-password/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import User from "@/models/user";
 import PasswordResetToken from "@/models/passwordResetToken";
 import { connectMongoDB } from "@/lib/db/mongodb";
-import { sendPasswordResetEmail } from "@/lib/email"; // You'll need to implement this
+import { sendPasswordResetEmail } from "@/lib/email/sendResetToken"; // You'll need to implement this
 
 export async function POST(req: NextRequest) {
   try {
