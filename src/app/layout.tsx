@@ -33,7 +33,7 @@ export default function RootLayout({
           <body className="bg-gray-50 dark:bg-gray-950 dark:text-gray-100">
             <ThemeProvider attribute="class" enableSystem defaultTheme="system">
               <Toaster position="top-center" />
-              <EmailVerificationToast /> {/* 👈 ตรวจ session + toast ที่นี่ */}
+              <EmailVerificationToast />
               {children}
             </ThemeProvider>
           </body>
