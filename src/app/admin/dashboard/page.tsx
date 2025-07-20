@@ -1,8 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -11,8 +9,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
   Area,
   AreaChart,
 } from "recharts";
@@ -20,12 +16,9 @@ import {
   Users,
   CheckCircle,
   Clock,
-  AlertCircle,
   TrendingUp,
   TrendingDown,
   Search,
-  Filter,
-  MoreVertical,
   Edit,
   Trash2,
   Eye,
@@ -37,7 +30,10 @@ import {
   Download,
   Upload,
   RefreshCw,
+  LucideProps,
 } from "lucide-react";
+import { useDashboard } from "@/hooks/useDashboard";
+import Loading from "@/components/Loading";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -45,102 +41,18 @@ const AdminDashboard = () => {
   const [selectedPriority, setSelectedPriority] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
 
-  // Mock data
-  const stats = {
-    totalUsers: 1247,
-    totalTodos: 3892,
-    completedTodos: 2156,
-    pendingTodos: 1736,
-    userGrowth: 12.5,
-    completionRate: 55.4,
-  };
+  const { stats, loading, fetchTodos, fetchUsers, refreshAll } = useDashboard();
 
-  const priorityData = [
-    { name: "High", value: 892, color: "#ef4444" },
-    { name: "Medium", value: 1567, color: "#f59e0b" },
-    { name: "Low", value: 1433, color: "#10b981" },
-  ];
+  useEffect(() => {
+    const init = async () => {
+      await refreshAll();
+      await fetchTodos(); // default page 1, limit 50
+      await fetchUsers();
+    };
+    init();
+  }, []);
 
-  const weeklyActivity = [
-    { day: "Mon", completed: 324, created: 156 },
-    { day: "Tue", completed: 298, created: 189 },
-    { day: "Wed", completed: 445, created: 234 },
-    { day: "Thu", completed: 378, created: 198 },
-    { day: "Fri", completed: 567, created: 287 },
-    { day: "Sat", completed: 234, created: 145 },
-    { day: "Sun", completed: 178, created: 89 },
-  ];
-
-  const todos = [
-    {
-      _id: "1",
-      title: "Complete project documentation",
-      description: "Write comprehensive docs for the new feature",
-      completed: false,
-      dueDate: "2024-07-25",
-      tags: ["work", "documentation"],
-      priority: "high",
-      user: "john@example.com",
-      createdAt: "2024-07-20",
-    },
-    {
-      _id: "2",
-      title: "Review team performance",
-      description: "Monthly performance review meeting",
-      completed: true,
-      dueDate: "2024-07-22",
-      tags: ["management", "review"],
-      priority: "medium",
-      user: "sarah@example.com",
-      createdAt: "2024-07-18",
-    },
-    {
-      _id: "3",
-      title: "Update website content",
-      description: "Refresh homepage and about page",
-      completed: false,
-      dueDate: "2024-07-30",
-      tags: ["website", "content"],
-      priority: "low",
-      user: "mike@example.com",
-      createdAt: "2024-07-19",
-    },
-  ];
-
-  const users = [
-    {
-      _id: "1",
-      email: "john@example.com",
-      username: "john_doe",
-      isVerified: true,
-      todosCount: 23,
-      completedTodos: 18,
-      lastActive: "2024-07-20",
-      joinDate: "2024-01-15",
-    },
-    {
-      _id: "2",
-      email: "sarah@example.com",
-      username: "sarah_wilson",
-      isVerified: true,
-      todosCount: 45,
-      completedTodos: 32,
-      lastActive: "2024-07-21",
-      joinDate: "2024-02-20",
-    },
-    {
-      _id: "3",
-      email: "mike@example.com",
-      username: "mike_johnson",
-      isVerified: false,
-      todosCount: 12,
-      completedTodos: 8,
-      lastActive: "2024-07-19",
-      joinDate: "2024-07-10",
-    },
-  ];
-
-  const getPriorityColor = (priority) => {
+  const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
         return "text-red-600 bg-red-100";
@@ -153,19 +65,34 @@ const AdminDashboard = () => {
     }
   };
 
-  const getStatusColor = (completed) => {
+  const getStatusColor = (completed: boolean) => {
     return completed
       ? "text-green-600 bg-green-100"
       : "text-orange-600 bg-orange-100";
   };
 
-  const StatCard = ({ title, value, change, icon: Icon, color }) => (
+  type StatCardProps = {
+    title: string;
+    value: number | string;
+    change?: number; // อาจจะเป็น % เช่น "12.5%" หรือ -5
+    icon: React.ForwardRefExoticComponent<
+      Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
+    >; // หรือใช้ React.ComponentType ถ้าไม่ใช้ react-icons
+    color?: string; // optional เช่น "#10b981" หรือ "text-green-500"
+  };
+  const StatCard = ({
+    title,
+    value,
+    change,
+    icon: Icon,
+    color,
+  }: StatCardProps) => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">
-            {value.toLocaleString()}
+            {value ? value.toLocaleString() : "0"}
           </p>
           {change !== undefined && (
             <div className="flex items-center mt-2">
@@ -197,27 +124,27 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Users"
-          value={stats.totalUsers}
-          change={stats.userGrowth}
+          value={stats.overview.totalUsers}
+          change={stats.overview.userGrowth}
           icon={Users}
           color="bg-blue-100 text-blue-600"
         />
         <StatCard
           title="Total Todos"
-          value={stats.totalTodos}
+          value={stats.overview.totalTodos}
           icon={CheckCircle}
           color="bg-purple-100 text-purple-600"
         />
         <StatCard
           title="Completed"
-          value={stats.completedTodos}
-          change={stats.completionRate}
+          value={stats.overview.completedTodos}
+          change={stats.overview.completionRate}
           icon={CheckCircle}
           color="bg-green-100 text-green-600"
         />
         <StatCard
           title="Pending"
-          value={stats.pendingTodos}
+          value={stats.overview.pendingTodos}
           icon={Clock}
           color="bg-orange-100 text-orange-600"
         />
@@ -233,18 +160,18 @@ const AdminDashboard = () => {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={priorityData}
+                data={stats.priorityData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) =>
-                  `${name} ${(percent * 100).toFixed(0)}%`
+                  `${name} ${(percent || 0 * 100).toFixed(0)}%`
                 }
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
-                {priorityData.map((entry, index) => (
+                {stats.priorityData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
@@ -259,7 +186,7 @@ const AdminDashboard = () => {
             Weekly Activity
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={weeklyActivity}>
+            <AreaChart data={stats.weeklyActivity}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="day" />
               <YAxis />
@@ -360,7 +287,7 @@ const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {todos.map((todo) => (
+              {stats.todos.map((todo) => (
                 <tr key={todo._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
@@ -470,7 +397,7 @@ const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => {
+              {stats.users.map((user) => {
                 const completionRate = (
                   (user.completedTodos / user.todosCount) *
                   100
@@ -550,6 +477,7 @@ const AdminDashboard = () => {
     </div>
   );
 
+  if (loading) return <Loading />;
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
