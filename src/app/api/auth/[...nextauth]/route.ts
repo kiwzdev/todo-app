@@ -13,7 +13,7 @@ interface ExtendedUser extends AuthUser {
   username: string;
   image?: string;
   role: string;
-  verifiedEmail: boolean;
+  emailVerified: boolean;
 }
 
 interface ExtendedToken extends JWT {
@@ -22,7 +22,7 @@ interface ExtendedToken extends JWT {
   username: string;
   image?: string;
   role: string;
-  verifiedEmail: boolean;
+  emailVerified: boolean;
 }
 
 interface ExtendedSession extends Session {
@@ -32,7 +32,7 @@ interface ExtendedSession extends Session {
     username: string;
     image?: string;
     role: string;
-    verifiedEmail: boolean;
+    emailVerified: boolean;
   };
 }
 
@@ -57,6 +57,7 @@ export const authOptions: NextAuthOptions = {
           if (!user) {
             throw new Error("User not found");
           }
+          console.log(user);
 
           const isPasswordCorrect = await bcrypt.compare(
             credentials.password,
@@ -64,21 +65,21 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!isPasswordCorrect) {
-            throw new Error("Invalid password");
+            throw new Error("INVALID_PASSWORD");
           }
 
           // Check if email is verified (optional - you can disable this check if needed)
-          if (!user.verifiedEmail) {
-            throw new Error("Please verify your email before logging in");
+          if (!user.emailVerified) {
+            throw new Error("EMAIL_NOT_VERIFIED");
           }
 
           return {
             id: user._id.toString(),
-            email: user.email,
-            username: user.username,
+            email: user.email.toLowerCase(),
+            username: user.username.toLowerCase(),
             image: user.image || undefined,
             role: user.role || "user", // default role
-            verifiedEmail: user.verifiedEmail || false,
+            emailVerified: user.emailVerified || false,
           };
         } catch (error) {
           console.error("Authorization error:", error);
@@ -107,23 +108,23 @@ export const authOptions: NextAuthOptions = {
       trigger?: "signIn" | "signUp" | "update";
       session?: Session;
     }): Promise<ExtendedToken> {
-      // When user signs in for the first time
+      // if user is logged in add user properties to token
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.username = user.username;
         token.image = user.image;
         token.role = user.role;
-        token.verifiedEmail = user.verifiedEmail;
+        token.emailVerified = user.emailVerified;
       }
 
-      // When session is updated
+      // When session is updated -> update token
       if (trigger === "update" && session?.user) {
         token.username = session.user.username ?? token.username;
         token.email = session.user.email ?? token.email;
         token.image = session.user.image ?? token.image;
         token.role = session.user.role ?? token.role;
-        token.verifiedEmail = session.user.verifiedEmail ?? token.verifiedEmail;
+        token.emailVerified = session.user.emailVerified ?? token.emailVerified;
       }
 
       return token;
@@ -136,15 +137,17 @@ export const authOptions: NextAuthOptions = {
       session: ExtendedSession;
       token: ExtendedToken;
     }): Promise<ExtendedSession> {
+      // add user properties to session
       session.user = {
         id: token.id,
         email: token.email!,
         username: token.username,
         image: token.image,
         role: token.role,
-        verifiedEmail: token.verifiedEmail,
+        emailVerified: token.emailVerified,
       };
 
+      // send session to client
       return session;
     },
 
@@ -166,6 +169,7 @@ export const authOptions: NextAuthOptions = {
       console.log("User signed in:", {
         user: user.email,
         account: account?.provider,
+        profile: profile,
       });
     },
     async signOut({ session, token }) {

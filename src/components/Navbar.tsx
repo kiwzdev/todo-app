@@ -24,6 +24,15 @@ export default function Navbar() {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-4">
           <ThemeToggle />
+          {session?.user.role === "admin" && (
+            <Link
+              href="/admin/dashboard"
+              className="text-gray-700 dark:text-gray-100 hover:text-blue-500"
+            >
+              Dashboard
+            </Link>
+          )}
+
           {session && (
             <Link
               href="/profile"

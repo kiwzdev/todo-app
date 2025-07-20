@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     }
 
     // ตรวจสอบว่าผู้ใช้มีอยู่จริง
-    const user = await User.findOne({ email: tokenDoc.email });
+    const user = await User.findOne({ email: tokenDoc.email  });
     if (!user) {
       return NextResponse.json(
         { success: false, message: "ไม่พบผู้ใช้งาน" },
@@ -63,9 +63,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "ยืนยันอีเมลสำเร็จ!"
+      message: "ยืนยันอีเมลสำเร็จ!",
     });
-
   } catch (error) {
     console.error("Email verification error:", error);
     return NextResponse.json(

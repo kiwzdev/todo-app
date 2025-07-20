@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,10 +10,8 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import Loading from "@/components/Loading";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { useSession } from "next-auth/react";
 
 export default function ContactPage() {
   // Authentication
@@ -28,7 +26,7 @@ export default function ContactPage() {
   };
 
   // Authentication
-  const status = useAuthRedirect();
+  const { status } = useSession();
   if (status === "loading") return <Loading />;
   if (status === "authenticated")
     return (

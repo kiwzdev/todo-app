@@ -7,9 +7,9 @@ import AddTodoForm from "@/components/Todo/AddTodoForm";
 import EditTodoModal from "@/components/Todo/EditTodoModal";
 import FilterSection from "@/components/Todo/FilterSection";
 import TodoCard from "@/components/Todo/TodoCard";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { useTodos } from "@/hooks/useTodos";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 
 export default function TodosPage() {
   const {
@@ -35,7 +35,7 @@ export default function TodosPage() {
     setEditTodoData,
   } = useTodos();
 
-  const status = useAuthRedirect();
+  const { status } = useSession();
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();

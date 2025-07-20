@@ -11,7 +11,7 @@ import Link from "next/link";
 
 // --- Custom Hooks ---
 import { useProfileForm } from "@/hooks/useProfileForm";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { useSession } from "next-auth/react";
 
 export default function ProfilePage() {
   // --- Custom Hook สำหรับจัดการ logic form/profile ---
@@ -26,7 +26,7 @@ export default function ProfilePage() {
     updateProfileMutation,
   } = useProfileForm();
   // Authentication
-  const status = useAuthRedirect();
+  const { status } = useSession();
   if (status === "loading") return <Loading />;
   if (status === "authenticated")
     return (

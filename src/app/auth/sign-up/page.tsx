@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
 import Loading from "@/components/Loading";
 import { userSchema } from "@/lib/validations/userSchema";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { useSession } from "next-auth/react";
 
 export default function SignUpPage() {
-
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -20,8 +18,8 @@ export default function SignUpPage() {
     confirmPassword: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
-
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,6 +28,7 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
     try {
       // Validation
@@ -40,13 +39,29 @@ export default function SignUpPage() {
         return;
       }
 
+      // สร้างบัญชีผู้ใช้และส่งอีเมลยืนยันในคำขอเดียว
       await axios.post("/api/auth/sign-up", {
         username: formData.username,
         email: formData.email,
         password: formData.password,
       });
 
-      toast.success("สมัครสมาชิกสำเร็จ!");
+      toast.success(
+        "📩 สมัครเรียบร้อยแล้ว! โปรดตรวจสอบอีเมลของคุณเพื่อยืนยันบัญชี",
+        {
+          duration: 5000,
+          position: "top-center",
+        }
+      );
+
+      await axios.post("/api/auth/send-verification-email", {
+        email: formData.email,
+      });
+
+      toast.success("ส่งอีเมลยืนยันใหม่แล้ว!", {
+        duration: 3000,
+        position: "top-center",
+      });
       router.push("/sign-in");
     } catch (err) {
       // Type guard
@@ -54,23 +69,21 @@ export default function SignUpPage() {
         const message =
           err.response?.data?.message || "เกิดข้อผิดพลาดจากฝั่งเซิร์ฟเวอร์";
 
-        if (err.response?.status === 409) {
-          setError("User already exists");
-          toast.error("ชื่อผู้ใช้หรืออีเมลถูกใช้แล้ว!");
-        } else {
-          setError(message);
-          toast.error(message);
-        }
+        setError(message);
+        toast.error(message);
       } else {
         setError("Something went wrong");
         toast.error("เกิดข้อผิดพลาดบางอย่าง");
       }
-     }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  // Authentication 
-  const status = useAuthRedirect();
+
+  // Authentication
+  const { status } = useSession();
   if (status === "loading") return <Loading />;
-  
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 px-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
@@ -92,7 +105,8 @@ export default function SignUpPage() {
               required
               value={formData.username}
               onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+              disabled={isSubmitting}
+              className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 disabled:opacity-50"
             />
             {formErrors.username && (
               <p className="text-red-500 text-sm">{formErrors.username[0]}</p>
@@ -109,7 +123,8 @@ export default function SignUpPage() {
               required
               value={formData.email}
               onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+              disabled={isSubmitting}
+              className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 disabled:opacity-50"
             />
             {formErrors.email && (
               <p className="text-red-500 text-sm">{formErrors.email[0]}</p>
@@ -126,7 +141,8 @@ export default function SignUpPage() {
               required
               value={formData.password}
               onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+              disabled={isSubmitting}
+              className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 disabled:opacity-50"
             />
             {formErrors.password && (
               <p className="text-red-500 text-sm">{formErrors.password[0]}</p>
@@ -143,7 +159,8 @@ export default function SignUpPage() {
               required
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+              disabled={isSubmitting}
+              className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 disabled:opacity-50"
             />
             {formErrors.confirmPassword && (
               <p className="text-red-500 text-sm">
@@ -154,9 +171,10 @@ export default function SignUpPage() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign up
+            {isSubmitting ? "กำลังสมัคร..." : "Sign up"}
           </button>
         </form>
 

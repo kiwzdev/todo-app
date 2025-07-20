@@ -16,9 +16,10 @@ export async function POST(req: NextRequest) {
 
     await connectMongoDB();
 
-    const existingEmail = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+
+    const existingEmail = await User.findOne({ email: normalizedEmail });
     if (existingEmail) {
-      // Email already exists
       return NextResponse.json(
         { message: "Email already exists" },
         { status: 409 }

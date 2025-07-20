@@ -1,12 +1,12 @@
 "use client";
 
 import { signIn, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Loading from "@/components/Loading";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import Link from "next/link";
+import EmailVerifyToast from "@/components/toast/EmailVerification";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -23,14 +23,16 @@ export default function SignInPage() {
     try {
       const res = await signIn("credentials", {
         redirect: false,
-        email: formData.email,
+        email: formData.email.toLowerCase(),
         password: formData.password,
       });
 
-      if (res?.error) {
-        setError("Invalid email or password");
-        toast.error("Invalid email or password");
-        return;
+      if (res?.error === "EMAIL_NOT_VERIFIED") {
+        toast.custom((t) => <EmailVerifyToast t={t} email={formData.email} />);
+      } else if (res?.error === "INVALID_PASSWORD") {
+        toast.error("Invalid password");
+      } else if (res?.error === "USER_NOT_FOUND") {
+        toast.error("User not found");
       }
       toast.success("Sign in successful");
       router.push("/todos");
@@ -41,7 +43,7 @@ export default function SignInPage() {
   };
 
   // Authentication
-  const status = useAuthRedirect();
+  const { status } = useSession();
   if (status === "loading") return <Loading />;
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
