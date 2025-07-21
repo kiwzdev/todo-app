@@ -1,6 +1,7 @@
 // app/api/upload/route.ts
 import { NextResponse } from "next/server";
 import cloudinary from "@/lib/cloudinary";
+import handleAPIError from "@/helpers/error";
 
 // กำหนดขนาดไฟล์สูงสุด (5MB)
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -20,7 +21,7 @@ function extractPublicIdFromUrl(url: string): string | null {
 
 // Validate file type
 function isValidImageType(file: File): boolean {
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
   return validTypes.includes(file.type);
 }
 
@@ -38,7 +39,11 @@ export async function POST(req: Request) {
     // ตรวจสอบขนาดไฟล์
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: `File size too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB` },
+        {
+          error: `File size too large. Maximum size is ${
+            MAX_FILE_SIZE / (1024 * 1024)
+          }MB`,
+        },
         { status: 400 }
       );
     }
@@ -46,13 +51,17 @@ export async function POST(req: Request) {
     // ตรวจสอบประเภทไฟล์
     if (!isValidImageType(file)) {
       return NextResponse.json(
-        { error: "Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed" },
+        {
+          error: "Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed",
+        },
         { status: 400 }
       );
     }
 
-    console.log(`Uploading file: ${file.name}, size: ${(file.size / 1024).toFixed(2)}KB`);
-    
+    console.log(
+      `Uploading file: ${file.name}, size: ${(file.size / 1024).toFixed(2)}KB`
+    );
+
     const startTime = Date.now();
 
     // แปลงไฟล์เป็น base64 แบบ optimized
@@ -65,27 +74,25 @@ export async function POST(req: Request) {
 
     // Upload ไปยัง Cloudinary พร้อม optimization
     const uploadStartTime = Date.now();
-    
+
     const uploadRes = await cloudinary.uploader.upload(dataURI, {
       folder: "todo-app",
       // ลด transformation ให้เหลือแค่จำเป็น
       transformation: [
-        { 
-          width: 500, 
-          height: 500, 
+        {
+          width: 500,
+          height: 500,
           crop: "limit",
           quality: "auto:good",
-          format: "auto"
-        }
+          format: "auto",
+        },
       ],
       // เพิ่ม options เพื่อเพิ่มความเร็ว
       resource_type: "auto",
       unique_filename: true,
       overwrite: false,
       // ใช้ eager transformation สำหรับ thumbnail
-      eager: [
-        { width: 150, height: 150, crop: "thumb", quality: "auto:low" }
-      ],
+      eager: [{ width: 150, height: 150, crop: "thumb", quality: "auto:low" }],
       eager_async: true, // ทำ eager transformation แบบ async
     });
 
@@ -119,15 +126,11 @@ export async function POST(req: Request) {
       uploadTime: totalTime,
       thumbnail: uploadRes.eager?.[0]?.secure_url || null,
     });
-
-  } catch (err) {
-    console.error("Upload to Cloudinary failed", err);
+  } catch (error) {
+    const { message, status, code } = handleAPIError(error);
     return NextResponse.json(
-      {
-        message: "Upload failed",
-        error: err instanceof Error ? err.message : "Unknown error",
-      },
-      { status: 500 }
+      { success: false, error: message, code },
+      { status }
     );
   }
 }
@@ -165,14 +168,11 @@ export async function DELETE(req: Request) {
         { status: 400 }
       );
     }
-  } catch (err) {
-    console.error("Delete from Cloudinary failed", err);
+  } catch (error) {
+    const { message, status, code } = handleAPIError(error);
     return NextResponse.json(
-      {
-        message: "Delete failed",
-        error: err instanceof Error ? err.message : "Unknown error",
-      },
-      { status: 500 }
+      { success: false, error: message, code },
+      { status }
     );
   }
 }

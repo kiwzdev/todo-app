@@ -68,17 +68,20 @@ export const useProfileForm = () => {
       uploadImageAPI(file, oldPublicId),
     onSuccess: (data) => {
       setFormState((prev) => ({ ...prev, image: data.publicId }));
-      toast.success("Image uploaded successfully!", { id: "upload" });
+      toast.success("Image uploaded successfully!", { id: "uploadImage" });
     },
-    onError: (error: unknown) => {
-      const message =
-        error instanceof AxiosError
-          ? error.response?.data?.message
-          : "Failed to upload image.";
-      toast.error(message, { id: "upload" });
+    onError: (error) => {
+      let message = "Failed to upload image.";
+
+      if (error instanceof AxiosError) {
+        message = error.response?.data?.message || message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message, { id: "uploadImage" });
     },
     onMutate: () => {
-      toast.loading("Uploading image...", { id: "upload" });
+      toast.loading("Uploading image...", { id: "uploadImage" });
     },
   });
 
@@ -92,14 +95,17 @@ export const useProfileForm = () => {
           ...data.user,
         },
       });
-      toast.success("Profile updated!");
+      toast.success("Profile updated!", { id: "updateProfile" });
     },
-    onError: (error: unknown) => {
-      const message =
-        error instanceof AxiosError
-          ? error.response?.data?.message
-          : "Something went wrong.";
-      toast.error(message);
+    onError: (error) => {
+      let message = "Failed to update profile.";
+
+      if (error instanceof AxiosError) {
+        message = error.response?.data?.message || message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message, { id: "updateProfile" });
     },
   });
 

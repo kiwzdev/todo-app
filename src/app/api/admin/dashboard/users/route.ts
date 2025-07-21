@@ -1,3 +1,4 @@
+import handleAPIError from "@/helpers/error";
 import User from "@/models/user";
 import { NextResponse } from "next/server";
 
@@ -51,9 +52,10 @@ export async function GET() {
     console.log("formattedUsers", formattedUsers);
     return NextResponse.json({ success: true, data: formattedUsers });
   } catch (error) {
+    const { message, status, code } = handleAPIError(error);
     return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
+      { success: false, error: message, code },
+      { status }
     );
   }
 }

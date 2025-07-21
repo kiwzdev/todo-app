@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { connectMongoDB } from "@/lib/db/mongodb";
 import User from "@/models/user";
+import handleAPIError from "@/helpers/error";
 
 async function getUserBySession() {
   const session = await getServerSession(authOptions);
@@ -64,7 +65,11 @@ export async function PUT(req: NextRequest) {
         image: currentUser.image,
       },
     });
-  } catch (err) {
-    return NextResponse.json({ message: "Failed to update profile", error: String(err) }, { status: 500 });
+  } catch (error) {
+    const { message, status, code } = handleAPIError(error);
+    return NextResponse.json(
+      { success: false, error: message, code },
+      { status }
+    );
   }
 }

@@ -7,6 +7,7 @@ import {
   UserItem,
   WeeklyActivityItem,
 } from "@/types/dashboard/stats";
+import { AxiosError } from "axios";
 import { useState } from "react";
 
 export const useDashboard = () => {
@@ -18,16 +19,27 @@ export const useDashboard = () => {
     users: [] as UserItem[],
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
   const fetchOverview = async () => {
     try {
       const response = await StatsAPI.getOverview();
       if (response.success) {
         setStats((prev) => ({ ...prev, overview: response.data }));
+      } else {
+        throw new Error(response.error || "Failed to fetch data");
       }
     } catch (err) {
-      setError(err.message);
+      let message = "Network error or server unavailable";
+
+      if (err instanceof AxiosError) {
+        message =
+          err.response?.data?.error || err.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      setError(message);
     }
   };
 
@@ -36,9 +48,20 @@ export const useDashboard = () => {
       const response = await StatsAPI.getPriorityStats();
       if (response.success) {
         setStats((prev) => ({ ...prev, priority: response.data }));
+      } else {
+        throw new Error(response.error || "Failed to fetch priority data");
       }
     } catch (err) {
-      setError(err.message);
+      let message = "Network error or server unavailable";
+
+      if (err instanceof AxiosError) {
+        message =
+          err.response?.data?.error || err.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      setError(message);
     }
   };
 
@@ -47,9 +70,22 @@ export const useDashboard = () => {
       const response = await StatsAPI.getWeeklyActivity();
       if (response.success) {
         setStats((prev) => ({ ...prev, weekly: response.data }));
+      } else {
+        throw new Error(
+          response.error || "Failed to fetch weekly activity data"
+        );
       }
     } catch (err) {
-      setError(err.message);
+      let message = "Network error or server unavailable";
+
+      if (err instanceof AxiosError) {
+        message =
+          err.response?.data?.error || err.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      setError(message);
     }
   };
 
@@ -58,9 +94,20 @@ export const useDashboard = () => {
       const response = await StatsAPI.getTodos(page, limit);
       if (response.success) {
         setStats((prev) => ({ ...prev, todos: response.data }));
+      } else {
+        throw new Error(response.error || "Failed to fetch todos data");
       }
     } catch (err) {
-      setError(err.message);
+      let message = "Network error or server unavailable";
+
+      if (err instanceof AxiosError) {
+        message =
+          err.response?.data?.error || err.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      setError(message);
     }
   };
 
@@ -69,20 +116,40 @@ export const useDashboard = () => {
       const response = await StatsAPI.getUsers(page, limit);
       if (response.success) {
         setStats((prev) => ({ ...prev, users: response.data }));
+      } else {
+        throw new Error(response.error || "Failed to fetch users data");
       }
     } catch (err) {
-      setError(err.message);
+      let message = "Network error or server unavailable";
+
+      if (err instanceof AxiosError) {
+        message =
+          err.response?.data?.error || err.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      setError(message);
     }
   };
 
   const refreshAll = async () => {
     setLoading(true);
-    setError(null);
+    setError("");
 
     try {
       await Promise.all([fetchOverview(), fetchPriority(), fetchWeekly()]);
     } catch (err) {
-      setError(err.message);
+      let message = "Network error or server unavailable";
+
+      if (err instanceof AxiosError) {
+        message =
+          err.response?.data?.error || err.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      setError(message);
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@ import User from "@/models/user";
 import PasswordResetToken from "@/models/passwordResetToken";
 import { connectMongoDB } from "@/lib/db/mongodb";
 import { sendPasswordResetEmail } from "@/lib/email/sendResetToken"; // You'll need to implement this
+import handleAPIError from "@/helpers/error";
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,10 +56,10 @@ export async function POST(req: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Forgot password error:", error);
+    const { message, status, code } = handleAPIError(error);
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+      { success: false, error: message, code },
+      { status }
     );
   }
 }

@@ -3,6 +3,7 @@ import { sendVerificationEmail } from "@/lib/email/sendVerificationEmail";
 import { v4 as uuidv4 } from "uuid";
 import { VerificationToken } from "@/models/verificationToken";
 import { connectMongoDB } from "@/lib/db/mongodb";
+import handleAPIError from "@/helpers/error";
 
 export async function POST(req: Request) {
   try {
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
 
     // สร้าง token ใหม่
     await VerificationToken.create({
-      email:email.ToLowerCase(),
+      email: email.ToLowerCase(),
       token,
       expires,
       createdAt: new Date(),
@@ -55,37 +56,10 @@ export async function POST(req: Request) {
       tokenExpiry: expires,
     });
   } catch (error) {
-    console.error("Send verification email error:", error);
-
-    // ตรวจสอบประเภทของ error
-    if (error instanceof Error) {
-      if (error.message.includes("email")) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "เกิดข้อผิดพลาดในการส่งอีเมล กรุณาลองอีกครั้ง",
-          },
-          { status: 500 }
-        );
-      }
-
-      if (error.message.includes("database")) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "เกิดข้อผิดพลาดในระบบฐานข้อมูล กรุณาลองอีกครั้ง",
-          },
-          { status: 500 }
-        );
-      }
-    }
-
+    const { message, status, code } = handleAPIError(error);
     return NextResponse.json(
-      {
-        success: false,
-        message: "เกิดข้อผิดพลาดในระบบ กรุณาลองอีกครั้งหรือติดต่อผู้ดูแล",
-      },
-      { status: 500 }
+      { success: false, error: message, code },
+      { status }
     );
   }
 }

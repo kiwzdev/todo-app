@@ -14,7 +14,7 @@ import {
 } from "@/services/todoService";
 import { NewTodo, Todo, TodoFilterState } from "@/types/todo";
 
-// --- Constants ---
+// --- Initial Todo State ---
 const INITIAL_TODO_DATA: NewTodo = {
   title: "",
   description: "",
@@ -23,13 +23,14 @@ const INITIAL_TODO_DATA: NewTodo = {
   priority: "medium",
 };
 
+// --- Initial Filter State ---
 const INITIAL_FILTERS: TodoFilterState = {
   searchTerm: "",
   priority: "",
   status: "",
 };
 
-// --- Custom Hook ---
+// Todos Hook
 export const useTodos = () => {
   const queryClient = useQueryClient();
 
@@ -50,55 +51,65 @@ export const useTodos = () => {
   const {
     data: todos = [],
     isLoading,
+    isPending,
     isError,
+    error,
   } = useQuery<Todo[]>({
     queryKey: ["todos"],
     queryFn: fetchTodos,
   });
 
-  // --- Mutations ---
   const addMutation = useMutation({
     mutationFn: addTodo,
     onSuccess: () => {
-      toast.success("Todo added successfully!");
+      toast.success("Todo added successfully!", { id: "addTodo" });
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
     onError: (error) => {
-      const message =
-        error instanceof AxiosError
-          ? error.response?.data?.message || error.message
-          : "Failed to add todo.";
-      toast.error(message);
+      let message = "Failed to add todo.";
+
+      if (error instanceof AxiosError) {
+        message = error.response?.data?.message || message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message, { id: "addTodo" });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: updateTodo,
     onSuccess: () => {
-      toast.success("Todo updated successfully!");
+      toast.success("Todo updated successfully!", { id: "updateTodo" });
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
     onError: (error) => {
-      const message =
-        error instanceof AxiosError
-          ? error.response?.data?.message || error.message
-          : "Failed to update todo.";
-      toast.error(message);
+      let message = "Failed to update todo.";
+
+      if (error instanceof AxiosError) {
+        message = error.response?.data?.message || message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message, { id: "updateTodo" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteTodo,
     onSuccess: () => {
-      toast.success("Todo deleted successfully!");
+      toast.success("Todo deleted successfully!", { id: "deleteTodo" });
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
     onError: (error) => {
-      const message =
-        error instanceof AxiosError
-          ? error.response?.data?.message || error.message
-          : "Failed to delete todo.";
-      toast.error(message);
+      let message = "Failed to delete todo.";
+
+      if (error instanceof AxiosError) {
+        message = error.response?.data?.message || message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message, { id: "deleteTodo" });
     },
   });
 
@@ -245,6 +256,7 @@ export const useTodos = () => {
     todos,
     filteredTodos,
     todoStats,
+    error,
 
     // Loading states
     isLoading,
@@ -252,6 +264,7 @@ export const useTodos = () => {
     isAnyMutationPending,
 
     // Specific loading states
+    isFetching: isPending,
     isAdding: addMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import User from "@/models/user";
 import PasswordResetToken from "@/models/passwordResetToken";
 import { connectMongoDB } from "@/lib/db/mongodb";
+import handleAPIError from "@/helpers/error";
 
 export async function POST(req: NextRequest) {
   try {
@@ -72,10 +73,10 @@ export async function POST(req: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Reset password error:", error);
+    const { message, status, code } = handleAPIError(error);
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+      { success: false, error: message, code },
+      { status }
     );
   }
 }

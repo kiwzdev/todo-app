@@ -1,3 +1,4 @@
+import handleAPIError from "@/helpers/error";
 import Todo from "@/models/todo";
 import { NextResponse } from "next/server";
 
@@ -23,9 +24,10 @@ export async function GET() {
     console.log("Formatted Todos:", formattedTodos);
     return NextResponse.json({ success: true, data: formattedTodos });
   } catch (error) {
+    const { message, status, code } = handleAPIError(error);
     return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
+      { success: false, error: message, code },
+      { status }
     );
   }
 }

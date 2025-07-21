@@ -15,7 +15,10 @@ export default function TodosPage() {
   const {
     filteredTodos,
     todoStats,
+    error,
+    isFetching,
     isLoading,
+    isError,
     filters,
     setFilters,
     handleAddTodo,
@@ -103,8 +106,10 @@ export default function TodosPage() {
                       No todos found
                     </p>
                   </div>
-                ) : isLoading ? (
+                ) : isLoading || isFetching ? (
                   <Loading />
+                ) : isError ? (
+                  <div>Error: {error?.message || "Error fetching todos"}</div>
                 ) : (
                   filteredTodos.map((todo) => (
                     <TodoCard

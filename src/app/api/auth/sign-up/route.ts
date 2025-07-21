@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectMongoDB } from "@/lib/db/mongodb";
 import bcrypt from "bcryptjs";
 import User from "@/models/user";
+import handleAPIError from "@/helpers/error";
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,8 +43,11 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ message: "User created" }, { status: 201 });
-  } catch (err) {
-    console.error("Error in register route:", err);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+  } catch (error) {
+    const { message, status, code } = handleAPIError(error);
+    return NextResponse.json(
+      { success: false, error: message, code },
+      { status }
+    );
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { VerificationToken } from "@/models/verificationToken";
 import User from "@/models/user";
 import { connectMongoDB } from "@/lib/db/mongodb";
+import handleAPIError from "@/helpers/error";
 
 export async function POST(req: Request) {
   try {
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
     }
 
     // ตรวจสอบว่าผู้ใช้มีอยู่จริง
-    const user = await User.findOne({ email: tokenDoc.email  });
+    const user = await User.findOne({ email: tokenDoc.email });
     if (!user) {
       return NextResponse.json(
         { success: false, message: "ไม่พบผู้ใช้งาน" },
@@ -66,10 +67,10 @@ export async function POST(req: Request) {
       message: "ยืนยันอีเมลสำเร็จ!",
     });
   } catch (error) {
-    console.error("Email verification error:", error);
+    const { message, status, code } = handleAPIError(error);
     return NextResponse.json(
-      { success: false, message: "เกิดข้อผิดพลาดในระบบ" },
-      { status: 500 }
+      { success: false, error: message, code },
+      { status }
     );
   }
 }
