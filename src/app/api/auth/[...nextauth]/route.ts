@@ -5,6 +5,7 @@ import NextAuth, { User as AuthUser, Session } from "next-auth";
 import { type SessionStrategy, type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
+import { AdapterUser } from "next-auth/adapters";
 
 // Extended types for our custom user properties
 interface ExtendedUser extends AuthUser {
@@ -13,7 +14,7 @@ interface ExtendedUser extends AuthUser {
   username: string;
   image?: string;
   role: string;
-  emailVerified: boolean;
+  emailVerified: Date | null;
 }
 
 interface ExtendedToken extends JWT {
@@ -22,7 +23,7 @@ interface ExtendedToken extends JWT {
   username: string;
   image?: string;
   role: string;
-  emailVerified: boolean;
+  emailVerified: Date | null;
 }
 
 interface ExtendedSession extends Session {
@@ -32,7 +33,7 @@ interface ExtendedSession extends Session {
     username: string;
     image?: string;
     role: string;
-    emailVerified: boolean;
+    emailVerified: Date | null;
   };
 }
 
@@ -79,7 +80,7 @@ export const authOptions: NextAuthOptions = {
             username: user.username.toLowerCase(),
             image: user.image || undefined,
             role: user.role || "user", // default role
-            emailVerified: user.emailVerified || false,
+            emailVerified: user.emailVerified,
           };
         } catch (error) {
           console.error("Authorization error:", error);
@@ -104,7 +105,7 @@ export const authOptions: NextAuthOptions = {
       session,
     }: {
       token: ExtendedToken;
-      user?: ExtendedUser;
+      user?: ExtendedUser | AdapterUser;
       trigger?: "signIn" | "signUp" | "update";
       session?: Session;
     }): Promise<ExtendedToken> {
@@ -172,7 +173,7 @@ export const authOptions: NextAuthOptions = {
         profile: profile,
       });
     },
-    async signOut({ session, token }) {
+    async signOut({ token }) {
       console.log("User signed out:", { user: token?.email });
     },
   },

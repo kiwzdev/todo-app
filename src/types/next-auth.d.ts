@@ -11,7 +11,7 @@ declare module "next-auth" {
       username: string;
       image?: string;
       role: string;
-      emailVerified: boolean;
+      emailVerified: Date | null;
     } & DefaultSession["user"]; // รวมกับฟิลด์ default ของ session.user เช่น email, name, image
   }
 
@@ -22,7 +22,7 @@ declare module "next-auth" {
     username: string;
     image?: string;
     role: string;
-    emailVerified: boolean;
+    emailVerified: Date | null;
   }
 }
 
@@ -35,7 +35,7 @@ declare module "next-auth/jwt" {
     username: string;
     image?: string;
     role: string;
-    emailVerified: boolean;
+    emailVerified: Date | null;
   }
 }
 // การ augment module แบบนี้ช่วยให้ TypeScript รู้จักฟิลด์พิเศษที่เราเพิ่มเอง (เช่น username และ id) ในระบบ NextAuth
