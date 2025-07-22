@@ -19,10 +19,11 @@ export const addTodo = async (newTodo: z.infer<typeof todoSchema>) => {
 export const updateTodo = async (
   updatedTodo: Partial<Todo> & { id: string }
 ) => {
-  const { data } = await axios.put("/api/todos", updatedTodo);
-  return data;
+  const { id, ...data } = updatedTodo;
+  const { data: result } = await axios.put(`/api/todos/${id}`, data);
+  return result;
 };
 
 export const deleteTodo = async (id: string) => {
-  await axios.delete("/api/todos", { data: { id } });
+  await axios.delete(`/api/todos/${id}`);
 };
