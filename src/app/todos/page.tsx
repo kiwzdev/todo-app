@@ -62,7 +62,7 @@ export default function TodosPage() {
         transition={{ delay: 0.3, duration: 0.5 }}
       >
         <div className="min-h-screen px-4 py-8 bg-gray-50 dark:bg-gray-950">
-          <div className="md:mx-25 max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto ">
             {/* Add Todo Form */}
             <AddTodoForm
               newTodoData={newTodoData}
@@ -82,14 +82,13 @@ export default function TodosPage() {
               onSubmit={handleEditSubmit}
               isUpdating={isUpdating}
             />
-
             {/* Todo List Section */}
             <div className="mt-8">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">
+                <h2 className="text-5xl md:text-4xl font-semibold text-gray-800 dark:text-gray-100">
                   My Todos
                 </h2>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-md text-gray-500 dark:text-gray-400">
                   {todoStats.completed} of {todoStats.total} completed (
                   {todoStats.completionRate}%)
                 </div>

@@ -26,7 +26,7 @@ const EditTodoModal = ({
     <div className="fixed inset-0 flex items-center justify-center p-4">
       <Dialog.Panel className="max-w-md w-full bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
         <form onSubmit={onSubmit} className="space-y-4">
-          <Dialog.Title className="text-xl font-bold text-gray-900 dark:text-gray-100">
+          <Dialog.Title className="md:text-2xl text-4xl font-bold text-gray-900 dark:text-gray-100">
             Edit Todo
           </Dialog.Title>
 
@@ -48,23 +48,28 @@ const EditTodoModal = ({
             }
             error={editingFormErrors.description}
           />
-
-          <FormInput
-            type="date"
-            value={editTodoData.dueDate || ""}
-            onChange={(value) =>
-              setEditTodoData({ ...editTodoData, dueDate: value })
-            }
-            error={editingFormErrors.dueDate}
-          />
-
-          <PrioritySelect
-            value={editTodoData.priority}
-            onChange={(value) =>
-              setEditTodoData({ ...editTodoData, priority: value as TodoPriority })
-            }
-            error={editingFormErrors.priority}
-          />
+          <div className="md:flex md:gap-x-2 items-start py-2 space-y-4 md:space-y-0">
+            <FormInput
+              type="date"
+              value={editTodoData.dueDate || ""}
+              onChange={(value) =>
+                setEditTodoData({ ...editTodoData, dueDate: value })
+              }
+              error={editingFormErrors.dueDate}
+              className="md:flex-1 min-h-100%"
+            />
+            <PrioritySelect
+              value={editTodoData.priority}
+              onChange={(value) =>
+                setEditTodoData({
+                  ...editTodoData,
+                  priority: value as TodoPriority,
+                })
+              }
+              error={editingFormErrors.priority}
+              className="w-full"
+            />
+          </div>
 
           <div className="space-y-1">
             <TagsInput

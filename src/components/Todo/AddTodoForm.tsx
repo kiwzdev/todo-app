@@ -11,16 +11,15 @@ const AddTodoForm = ({
   isAdding,
 }: {
   newTodoData: NewTodo;
-  setNewTodoData: (data: NewTodo) => void;
+  setNewTodoData: React.Dispatch<React.SetStateAction<NewTodo>>;
   formErrors: Record<string, string[]>;
   onSubmit: (e: React.FormEvent) => void;
   isAdding: boolean;
 }) => (
   <form onSubmit={onSubmit} className="space-y-4">
-    <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">
+    <h2 className="text-5xl md:text-4xl font-semibold text-gray-800 dark:text-gray-100">
       Add New Todo
     </h2>
-
     <FormInput
       placeholder="Title"
       value={newTodoData.title}
@@ -38,13 +37,13 @@ const AddTodoForm = ({
       error={formErrors.description}
     />
 
-    <div className="flex gap-2">
+    <div className="md:flex md:gap-2 space-y-4">
       <FormInput
         type="date"
         value={newTodoData.dueDate || ""}
         onChange={(value) => setNewTodoData({ ...newTodoData, dueDate: value })}
         error={formErrors.dueDate}
-        className="flex-1"
+        className="md:flex-1"
       />
 
       <PrioritySelect
@@ -53,11 +52,11 @@ const AddTodoForm = ({
           setNewTodoData({ ...newTodoData, priority: value as TodoPriority })
         }
         error={formErrors.priority}
-        className="w-40"
+        className="md:flex-1 w-full "
       />
     </div>
 
-    <div className="space-y-1">
+    <div>
       <TagsInput editTodoData={newTodoData} setEditTodoData={setNewTodoData} />
       {formErrors.tags && (
         <p className="text-red-500 text-sm">{formErrors.tags[0]}</p>
@@ -67,7 +66,7 @@ const AddTodoForm = ({
     <button
       type="submit"
       disabled={isAdding}
-      className="w-full bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:text-black dark:hover:bg-green-500 text-white font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
+      className="w-full bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:text-black dark:hover:bg-green-500 text-white font-semibold md:text-md text-2xl py-3 md:py-2 rounded-lg transition-colors disabled:opacity-50"
     >
       {isAdding ? "Adding..." : "Add Todo"}
     </button>

@@ -11,12 +11,12 @@ const PrioritySelect = ({
   error?: string[];
   className?: string;
 }) => (
-  <div className="space-y-1">
+  <div>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value as "low" | "medium" | "high")}
       className={clsx(
-        "px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0",
+        "w-full lg:text-md text-lg px-4 py-2 rounded-lg border bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 shadow-sm light:shadow-green-100 hover:shadow-md focus:shadow-md transition-shadow duration-300 ease-in-out focus:outline-none focus:ring-0",
         className
       )}
     >

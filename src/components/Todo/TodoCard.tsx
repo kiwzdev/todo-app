@@ -30,7 +30,7 @@ const TodoCard = ({
       <div className="flex justify-between items-start">
         <h3
           className={clsx(
-            "text-lg font-semibold flex items-center gap-2",
+            "text-2xl lg:text-lg font-semibold flex items-center gap-2",
             todo.completed
               ? "text-green-400"
               : "text-gray-800 dark:text-gray-100"
@@ -65,7 +65,7 @@ const TodoCard = ({
       {/* Content */}
       <div className="mt-4 space-y-3">
         {/* Description */}
-        <p className="text-sm text-gray-500 dark:text-gray-300">
+        <p className="text-md lg:text-sm text-gray-500 dark:text-gray-300">
           {todo.description || "No description"}
         </p>
 
@@ -75,18 +75,20 @@ const TodoCard = ({
             todo.tags.map((tag, i) => (
               <span
                 key={i}
-                className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-100 px-2 py-0.5 rounded-full"
+                className="text-sm lg:text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-100 px-2 py-0.5 rounded-full"
               >
                 #{tag}
               </span>
             ))
           ) : (
-            <span className="text-xs text-gray-400 italic">No tags</span>
+            <span className="text-sm lg:text-xs text-gray-400 italic">
+              No tags
+            </span>
           )}
         </div>
 
         {/* Due Date */}
-        <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="text-md lg:text-sm text-gray-500 dark:text-gray-400">
           Due: {formattedDate}
         </div>
 

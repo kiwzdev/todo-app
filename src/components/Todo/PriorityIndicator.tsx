@@ -19,7 +19,7 @@ const PriorityIndicator = ({
   priority: "high" | "medium" | "low";
 }) => (
   <div className="flex items-center gap-1">
-    <span className="text-sm text-gray-500 dark:text-gray-400">Priority:</span>
+    <span className="text-gray-500 dark:text-gray-400">Priority:</span>
     {Array.from({ length: PRIORITY_LEVELS[priority] }, (_, i) => (
       <Circle
         key={i}
