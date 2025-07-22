@@ -12,15 +12,15 @@ import {
   updateTodo,
   deleteTodo,
 } from "@/services/todoService";
-import { NewTodo, Todo, TodoFilterState } from "@/types/todo";
+import { NewTodo, Todo, TodoFilterState, TodoPriority } from "@/types/todo";
 
 // --- Initial Todo State ---
-const INITIAL_TODO_DATA: NewTodo = {
+const INITIAL_TODO_DATA: NewTodo | Todo = {
   title: "",
   description: "",
   dueDate: "",
   tags: [],
-  priority: "medium",
+  priority: TodoPriority.MEDIUM,
 };
 
 // --- Initial Filter State ---
@@ -36,7 +36,7 @@ export const useTodos = () => {
 
   // --- State Management ---
   const [newTodoData, setNewTodoData] = useState<NewTodo>(INITIAL_TODO_DATA);
-  const [editTodoData, setEditTodoData] = useState<NewTodo>(INITIAL_TODO_DATA);
+  const [editTodoData, setEditTodoData] = useState<Todo | NewTodo>(INITIAL_TODO_DATA);
   const [filters, setFilters] = useState<TodoFilterState>(INITIAL_FILTERS);
 
   const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
@@ -179,6 +179,7 @@ export const useTodos = () => {
     const payload = {
       ...validation.data,
       dueDate: validation.data.dueDate || undefined,
+      priority: validation.data.priority as TodoPriority
     };
 
     updateMutation.mutate(payload, {
@@ -225,7 +226,7 @@ export const useTodos = () => {
       const matchesStatus =
         !filters.status ||
         (filters.status === "completed" && todo.completed) ||
-        (filters.status === "incompleted" && !todo.completed);
+        (filters.status === "pending" && !todo.completed);
 
       return matchesSearch && matchesPriority && matchesStatus;
     });

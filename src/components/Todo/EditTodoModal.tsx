@@ -2,6 +2,7 @@ import { Dialog } from "@headlessui/react";
 import FormInput from "./FormInput";
 import PrioritySelect from "./PrioritySelect";
 import TagsInput from "./Tag/TagsInput";
+import { NewTodo, Todo, TodoPriority } from "@/types/todo";
 
 const EditTodoModal = ({
   isOpen,
@@ -14,9 +15,9 @@ const EditTodoModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  editTodoData: any;
-  setEditTodoData: any;
-  editingFormErrors: any;
+  editTodoData: Todo | NewTodo;
+  setEditTodoData: React.Dispatch<React.SetStateAction<Todo | NewTodo>>;
+  editingFormErrors: Record<string, string[]>;
   onSubmit: (e: React.FormEvent) => void;
   isUpdating: boolean;
 }) => (
@@ -41,7 +42,7 @@ const EditTodoModal = ({
           <FormInput
             type="textarea"
             placeholder="Description"
-            value={editTodoData.description}
+            value={editTodoData.description || ""}
             onChange={(value) =>
               setEditTodoData({ ...editTodoData, description: value })
             }
@@ -50,7 +51,7 @@ const EditTodoModal = ({
 
           <FormInput
             type="date"
-            value={editTodoData.dueDate}
+            value={editTodoData.dueDate || ""}
             onChange={(value) =>
               setEditTodoData({ ...editTodoData, dueDate: value })
             }
@@ -60,7 +61,7 @@ const EditTodoModal = ({
           <PrioritySelect
             value={editTodoData.priority}
             onChange={(value) =>
-              setEditTodoData({ ...editTodoData, priority: value })
+              setEditTodoData({ ...editTodoData, priority: value as TodoPriority })
             }
             error={editingFormErrors.priority}
           />

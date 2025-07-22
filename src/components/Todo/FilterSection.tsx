@@ -5,8 +5,8 @@ const FilterSection = ({
   filters,
   setFilters,
 }: {
-  filters: any;
-  setFilters: any;
+  filters: TodoFilterState;
+  setFilters: React.Dispatch<React.SetStateAction<TodoFilterState>>;
 }) => (
   <div className="flex flex-col sm:flex-row gap-4 my-4">
     {/* Search Input */}
@@ -21,7 +21,7 @@ const FilterSection = ({
           placeholder="Search todos..."
           value={filters.searchTerm}
           onChange={(e) =>
-            setFilters((prev: TodoFilterState) => ({
+            setFilters((prev : TodoFilterState) => ({
               ...prev,
               searchTerm: e.target.value,
             }))
@@ -67,14 +67,14 @@ const FilterSection = ({
       onChange={(e) =>
         setFilters((prev: TodoFilterState) => ({
           ...prev,
-          status: e.target.value as "completed" | "incompleted",
+          status: e.target.value as "completed" | "pending" | "",
         }))
       }
       className="w-full sm:w-1/4 p-2 border rounded-md dark:bg-gray-950 text-gray-900 dark:text-gray-100"
     >
       <option value="">All Status</option>
       <option value="completed">Completed</option>
-      <option value="incompleted">Incompleted</option>
+      <option value="pending">Pending</option>
     </select>
   </div>
 );

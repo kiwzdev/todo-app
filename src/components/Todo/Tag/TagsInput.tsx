@@ -1,4 +1,4 @@
-import { NewTodo } from "@/types/todo";
+import { NewTodo, Todo } from "@/types/todo";
 import { useState } from "react";
 
 export default function TagsInput({
@@ -6,7 +6,7 @@ export default function TagsInput({
   setEditTodoData,
 }: {
   editTodoData: NewTodo;
-  setEditTodoData: (data: NewTodo) => void;
+  setEditTodoData: (data: NewTodo | Todo) => void;
 }) {
   const [input, setInput] = useState("");
 

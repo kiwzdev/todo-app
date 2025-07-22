@@ -1,3 +1,4 @@
+import { NewTodo, TodoPriority } from "@/types/todo";
 import FormInput from "./FormInput";
 import PrioritySelect from "./PrioritySelect";
 import TagsInput from "./Tag/TagsInput";
@@ -9,9 +10,9 @@ const AddTodoForm = ({
   onSubmit,
   isAdding,
 }: {
-  newTodoData: any;
-  setNewTodoData: any;
-  formErrors: any;
+  newTodoData: NewTodo;
+  setNewTodoData: (data: NewTodo) => void;
+  formErrors: Record<string, string[]>;
   onSubmit: (e: React.FormEvent) => void;
   isAdding: boolean;
 }) => (
@@ -30,7 +31,7 @@ const AddTodoForm = ({
     <FormInput
       type="textarea"
       placeholder="Description"
-      value={newTodoData.description}
+      value={newTodoData.description || ""}
       onChange={(value) =>
         setNewTodoData({ ...newTodoData, description: value })
       }
@@ -40,7 +41,7 @@ const AddTodoForm = ({
     <div className="flex gap-2">
       <FormInput
         type="date"
-        value={newTodoData.dueDate}
+        value={newTodoData.dueDate || ""}
         onChange={(value) => setNewTodoData({ ...newTodoData, dueDate: value })}
         error={formErrors.dueDate}
         className="flex-1"
@@ -49,7 +50,7 @@ const AddTodoForm = ({
       <PrioritySelect
         value={newTodoData.priority}
         onChange={(value) =>
-          setNewTodoData({ ...newTodoData, priority: value })
+          setNewTodoData({ ...newTodoData, priority: value as TodoPriority })
         }
         error={formErrors.priority}
         className="w-40"

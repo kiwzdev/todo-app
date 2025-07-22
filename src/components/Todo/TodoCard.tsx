@@ -71,7 +71,7 @@ const TodoCard = ({
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1 min-h-[1.5rem]">
-          {todo.tags?.length > 0 ? (
+          {todo.tags ? (
             todo.tags.map((tag, i) => (
               <span
                 key={i}
